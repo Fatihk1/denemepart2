@@ -73,7 +73,7 @@ const AddCompany = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Oturum bulunamadı. Lütfen tekrar giriş yapın.');
-      const owner_id = session.user.id;
+      const user_id = session.user.id;
       const company_code = 'F' + Math.random().toString(36).substring(2, 8).toUpperCase();
       if (!allTaxOffices.some((vd) => vd.vdadi === taxOfficeInput)) {
         setError('Lütfen listeden bir vergi dairesi seçin.');
@@ -94,7 +94,7 @@ const AddCompany = () => {
       const selectedIlce = filteredDistricts.find((ilce) => ilce.name === form.district)?.name || '';
       const { error: insertError } = await supabase.from('companies').insert([
         {
-          owner_id,
+          user_id,
           company_code,
           company_name: form.company_name,
           tax_office: taxOfficeInput,

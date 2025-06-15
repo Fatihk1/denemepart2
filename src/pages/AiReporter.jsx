@@ -19,7 +19,7 @@ const AiReporter = () => {
       const { data, error } = await supabase
         .from('companies')
         .select('*')
-        .eq('owner_id', session.user.id)
+        .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
       if (!error) setCompanies(data);
       setLoading(false);
