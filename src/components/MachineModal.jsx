@@ -114,6 +114,7 @@ const MachineModal = ({ open, onClose, onAdd, machine, onDelete, onUpdate }) => 
         <form className="space-y-3">
           <div className="flex gap-2">
             <div className="w-1/2">
+              <label className="block text-xs text-gray-500 mb-1 text-left">Makine Adı:</label>
               <select name="name" value={form.name} onChange={handleChange} disabled={!edit} required className="w-full px-3 py-2 border rounded-lg">
                 <option value="">Makine Adı</option>
                 {MAKINE_LIST.map(m => <option key={m} value={m}>{m}</option>)}
@@ -123,6 +124,7 @@ const MachineModal = ({ open, onClose, onAdd, machine, onDelete, onUpdate }) => 
               )}
             </div>
             <div className="w-1/2">
+              <label className="block text-xs text-gray-500 mb-1 text-left">Adet:</label>
               <select name="quantity" value={form.quantity} onChange={handleChange} disabled={!edit} required className="w-full px-3 py-2 border rounded-lg">
                 <option value="">Makine Sayısı</option>
                 {QUANTITY_OPTIONS.map(q => <option key={q} value={q}>{q}</option>)}
@@ -135,6 +137,7 @@ const MachineModal = ({ open, onClose, onAdd, machine, onDelete, onUpdate }) => 
               <input type="date" name="maintenance_date" value={form.maintenance_date} onChange={handleChange} disabled={!edit} className="w-full px-3 py-2 border rounded-lg" />
             </div>
             <div className="w-1/2">
+              <label className="block text-xs text-gray-500 mb-1 text-left">Bakım Periyot (Ay):</label>
               <select name="maintenance_period" value={form.maintenance_period} onChange={handleChange} disabled={!edit} required className="w-full px-3 py-2 border rounded-lg">
                 <option value="">Bakım Periyodu (Ay)</option>
                 {PERIOD_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}

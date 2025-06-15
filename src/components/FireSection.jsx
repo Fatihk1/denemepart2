@@ -44,6 +44,12 @@ const FireSection = ({ companyId }) => {
     fetchFireEquipments();
   };
 
+  const handleModalClose = () => {
+    setShowFireModal(false);
+    setSelectedEquipment(null);
+    fetchFireEquipments();
+  };
+
   if (loading) return <div className="text-gray-500">Yükleniyor...</div>;
 
   return (
@@ -74,7 +80,7 @@ const FireSection = ({ companyId }) => {
         })}
         <FireEquipmentModal
           open={!!showFireModal || !!selectedEquipment}
-          onClose={() => { setShowFireModal(false); setSelectedEquipment(null); }}
+          onClose={handleModalClose}
           onAdd={selectedEquipment ? handleUpdate : handleAdd}
           equipment={selectedEquipment}
           onDelete={handleDelete}
