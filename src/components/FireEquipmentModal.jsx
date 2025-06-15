@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getFireEquipmentDaysLeft } from '../utils';
 
 const FIRE_EQUIPMENT_OPTIONS = [
   'Yangın Tüpü',
@@ -76,6 +77,8 @@ const FireEquipmentModal = ({ open, onClose, onAdd, equipment, onDelete }) => {
     }
   };
 
+  const daysLeft = form.last_check_date ? getFireEquipmentDaysLeft(form.last_check_date) : null;
+
   return open ? (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-xl relative">
@@ -129,6 +132,9 @@ const FireEquipmentModal = ({ open, onClose, onAdd, equipment, onDelete }) => {
               disabled={!edit}
               className="w-full px-3 py-2 border rounded-lg"
             />
+            {form.last_check_date && (
+              <div className="text-xs mt-1 text-gray-600">Kalan: {daysLeft} gün</div>
+            )}
           </div>
         </form>
         <div className="flex gap-4 mt-6 justify-between items-center">

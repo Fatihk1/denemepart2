@@ -7,6 +7,9 @@ const MAKINE_LIST = [
   'Diğer'
 ];
 
+const QUANTITY_OPTIONS = Array.from({ length: 50 }, (_, i) => i + 1);
+const PERIOD_OPTIONS = Array.from({ length: 60 }, (_, i) => i + 1);
+
 const MachineModal = ({ open, onClose, onAdd, machine, onDelete, onUpdate }) => {
   const [form, setForm] = useState({
     name: '',
@@ -44,12 +47,24 @@ const MachineModal = ({ open, onClose, onAdd, machine, onDelete, onUpdate }) => 
 
   const handleChange = e => {
     const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
+    setForm(f => {
+      let updated = { ...f, [name]: value };
+      if ((name === 'maintenance_period' || name === 'maintenance_date') && updated.maintenance_date && updated.maintenance_period) {
+        const date = new Date(updated.maintenance_date);
+        date.setMonth(date.getMonth() + Number(updated.maintenance_period));
+        updated.maintenance_validity_date = date.toISOString().slice(0, 10);
+      }
+      return updated;
+    });
     setChanged(true);
     if (name === 'name') setShowNameOther(value === 'Diğer');
   };
 
   const handleClose = () => {
+    if (form.name === 'Diğer' && !form.name_other.trim()) {
+      alert("Makine adını 'Diğer' seçtiniz. Lütfen bir makine adı yazınız.");
+      return;
+    }
     if (edit && changed) {
       if (window.confirm('Değişiklikleri kaydetmeden kapatmak istediğinize emin misiniz?')) onClose();
     } else {
@@ -58,6 +73,10 @@ const MachineModal = ({ open, onClose, onAdd, machine, onDelete, onUpdate }) => 
   };
 
   const handleSave = () => {
+    if (form.name === 'Diğer' && !form.name_other.trim()) {
+      alert("Makine adını 'Diğer' seçtiniz. Lütfen bir makine adı yazınız.");
+      return;
+    }
     if (machine && onUpdate) {
       onUpdate({
         ...form,
@@ -104,7 +123,10 @@ const MachineModal = ({ open, onClose, onAdd, machine, onDelete, onUpdate }) => 
               )}
             </div>
             <div className="w-1/2">
-              <input name="quantity" value={form.quantity} onChange={handleChange} disabled={!edit} required placeholder="Adet" className="w-full px-3 py-2 border rounded-lg" type="number" />
+              <select name="quantity" value={form.quantity} onChange={handleChange} disabled={!edit} required className="w-full px-3 py-2 border rounded-lg">
+                <option value="">Makine Sayısı</option>
+                {QUANTITY_OPTIONS.map(q => <option key={q} value={q}>{q}</option>)}
+              </select>
             </div>
           </div>
           <div className="flex gap-2">
@@ -113,8 +135,10 @@ const MachineModal = ({ open, onClose, onAdd, machine, onDelete, onUpdate }) => 
               <input type="date" name="maintenance_date" value={form.maintenance_date} onChange={handleChange} disabled={!edit} className="w-full px-3 py-2 border rounded-lg" />
             </div>
             <div className="w-1/2">
-              <label className="block text-xs text-gray-500 mb-1">Bakım Periyodu (Ay)</label>
-              <input type="number" name="maintenance_period" value={form.maintenance_period} onChange={handleChange} disabled={!edit} className="w-full px-3 py-2 border rounded-lg" />
+              <select name="maintenance_period" value={form.maintenance_period} onChange={handleChange} disabled={!edit} required className="w-full px-3 py-2 border rounded-lg">
+                <option value="">Bakım Periyodu (Ay)</option>
+                {PERIOD_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
             </div>
           </div>
           <div className="w-full">
