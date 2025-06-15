@@ -56,10 +56,18 @@ const FireEquipmentModal = ({ open, onClose, onAdd, equipment, onDelete }) => {
   };
 
   const handleSave = () => {
-    onAdd({
-      ...form,
-      equipment_type: form.equipment_type === 'Diğer' ? form.equipment_type_other : form.equipment_type
-    });
+    if (equipment) {
+      onAdd({
+        ...form,
+        id: equipment.id,
+        equipment_type: form.equipment_type === 'Diğer' ? form.equipment_type_other : form.equipment_type
+      });
+    } else {
+      onAdd({
+        ...form,
+        equipment_type: form.equipment_type === 'Diğer' ? form.equipment_type_other : form.equipment_type
+      });
+    }
     setEdit(false);
     setChanged(false);
     onClose();
