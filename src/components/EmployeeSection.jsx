@@ -5,6 +5,7 @@ import EmployeeModal from './EmployeeModal';
 import EmployeeDetailModal from './EmployeeDetailModal';
 import useAssignments from '../hooks/useAssignments';
 import usePpeDeliveries from '../hooks/usePpeDeliveries';
+import { addReportIfNotExists } from '../lib/reportHelpers';
 
 const EmployeeSection = ({ companyId, dangerClass }) => {
   const [employees, setEmployees] = useState([]);
@@ -55,6 +56,18 @@ const EmployeeSection = ({ companyId, dangerClass }) => {
         report_refresh: hasHealthReport ? form.report_refresh : null
       }
     ]);
+    await addReportIfNotExists({
+      company_id: companyId,
+      type: 'Sağlık Raporu',
+      target: `${form.first_name} ${form.last_name}`,
+      created_by: 'user'
+    });
+    if (employees.length === 0) {
+      await addReportIfNotExists({ company_id: companyId, type: 'İşveren ISG Eğitim Belgesi', target: '', created_by: 'user' });
+      await addReportIfNotExists({ company_id: companyId, type: 'Risk Değerlendirme Raporu', target: '', created_by: 'user' });
+      await addReportIfNotExists({ company_id: companyId, type: 'Acil Durum Planı', target: '', created_by: 'user' });
+      await addReportIfNotExists({ company_id: companyId, type: 'Yıllık Çalışma Planı', target: '', created_by: 'user' });
+    }
     fetchEmployees();
   };
 

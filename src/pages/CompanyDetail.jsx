@@ -7,6 +7,7 @@ import ChemicalSection from '../components/ChemicalSection';
 import PpeSection from '../components/PpeSection';
 import FireSection from '../components/FireSection';
 import AssignmentSection from '../components/AssignmentSection';
+import ReportSection from '../components/ReportSection';
 
 const categories = [
   { key: 'employees', label: 'Çalışanlar' },
@@ -15,6 +16,7 @@ const categories = [
   { key: 'ppe', label: 'KKD' },
   { key: 'fire', label: 'Yangın/İlkyardım' },
   { key: 'assignments', label: 'Görev Atama' },
+  { key: 'reports', label: 'Rapor Listesi' },
 ];
 
 const tableMap = {
@@ -90,6 +92,7 @@ const CompanyDetail = () => {
         {activeTab === 'ppe' && <PpeSection companyId={id} company={company} />}
         {activeTab === 'fire' && <FireSection companyId={id} />}
         {activeTab === 'assignments' && <AssignmentSection companyId={id} company={company} />}
+        {activeTab === 'reports' && <ReportSection companyId={id} />}
       </div>
     </div>
   );
