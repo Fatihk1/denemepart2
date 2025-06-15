@@ -13,8 +13,8 @@ const categories = [
   { key: 'machines', label: 'Makineler' },
   { key: 'chemicals', label: 'Kimyasallar' },
   { key: 'ppe', label: 'KKD' },
-  { key: 'fire', label: 'Yangın ve İlkyardım' },
-  { key: 'assignments', label: 'Görev Atamaları' },
+  { key: 'fire', label: 'Yangın/İlkyardım' },
+  { key: 'assignments', label: 'Görev Atama' },
 ];
 
 const tableMap = {

@@ -38,3 +38,11 @@
 .read-the-docs {
   color: #888;
 }
+
+html, body {
+  font-size: 14px !important;
+}
+
+* {
+  font-size: inherit !important;
+}
