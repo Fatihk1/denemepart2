@@ -56,6 +56,16 @@ const FireEquipmentModal = ({ open, onClose, onAdd, equipment, onDelete }) => {
   };
 
   const handleSave = () => {
+    // Zorunlu alan kontrolü
+    const selectedType = form.equipment_type === 'Diğer' ? form.equipment_type_other : form.equipment_type;
+    if (!selectedType || selectedType.trim() === '') {
+      alert('Lütfen ekipman türü seçiniz!');
+      return;
+    }
+    if (!form.last_check_date) {
+      alert('Lütfen son kontrol tarihini seçiniz!');
+      return;
+    }
     if (equipment) {
       onAdd({
         ...form,
