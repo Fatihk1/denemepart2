@@ -10,7 +10,24 @@ const AssignmentSection = ({ companyId, company }) => {
   const employeeCount = employees.length;
 
   const handleAdd = async data => {
-    await addAssignment({ ...data, company_id: companyId });
+    const employee = employees.find(e => e.id === data.employee_id);
+    await addAssignment({
+      ...data,
+      company_id: companyId,
+      employee_first_name: employee ? employee.first_name : '',
+      employee_last_name: employee ? employee.last_name : ''
+    });
+    await syncAssignmentReports(companyId);
+  };
+
+  const handleUpdate = async data => {
+    const employee = employees.find(e => e.id === data.employee_id);
+    await addAssignment({
+      ...data,
+      company_id: companyId,
+      employee_first_name: employee ? employee.first_name : '',
+      employee_last_name: employee ? employee.last_name : ''
+    });
     await syncAssignmentReports(companyId);
   };
 
@@ -28,6 +45,7 @@ const AssignmentSection = ({ companyId, company }) => {
         statusColor={assignments.filter(a => a.role === 'İşveren').length >= 1 ? 'text-green-600' : 'text-red-600'}
         onAdd={handleAdd}
         onRemove={handleRemove}
+        onUpdate={handleUpdate}
         assignments={assignments.filter(a => a.role === 'İşveren')}
         employeeList={employees}
         role="İşveren"
@@ -39,6 +57,7 @@ const AssignmentSection = ({ companyId, company }) => {
         statusColor="text-gray-400"
         onAdd={handleAdd}
         onRemove={handleRemove}
+        onUpdate={handleUpdate}
         assignments={assignments.filter(a => a.role === 'İşveren Vekili')}
         employeeList={employees}
         role="İşveren Vekili"
@@ -50,6 +69,7 @@ const AssignmentSection = ({ companyId, company }) => {
         statusColor={assignments.filter(a => a.role === 'Çalışan Temsilcisi').length >= (employeeCount > 100 ? 3 : employeeCount > 50 ? 2 : 1) ? 'text-green-600' : 'text-red-600'}
         onAdd={handleAdd}
         onRemove={handleRemove}
+        onUpdate={handleUpdate}
         assignments={assignments.filter(a => a.role === 'Çalışan Temsilcisi')}
         employeeList={employees}
         role="Çalışan Temsilcisi"
@@ -61,6 +81,7 @@ const AssignmentSection = ({ companyId, company }) => {
         statusColor={assignments.filter(a => a.role === 'Acil Durum Ekibi').length >= (company.danger_class === 'Az Tehlikeli' ? Math.ceil(employeeCount / 20) || 1 : company.danger_class === 'Tehlikeli' ? Math.ceil(employeeCount / 15) || 1 : Math.ceil(employeeCount / 10) || 1) ? 'text-green-600' : 'text-red-600'}
         onAdd={handleAdd}
         onRemove={handleRemove}
+        onUpdate={handleUpdate}
         assignments={assignments.filter(a => a.role === 'Acil Durum Ekibi')}
         employeeList={employees}
         role="Acil Durum Ekibi"
@@ -72,6 +93,7 @@ const AssignmentSection = ({ companyId, company }) => {
         statusColor={assignments.filter(a => a.role === 'İlk Yardımcı').length >= (company.danger_class === 'Az Tehlikeli' ? Math.ceil(employeeCount / 20) || 1 : company.danger_class === 'Tehlikeli' ? Math.ceil(employeeCount / 15) || 1 : Math.ceil(employeeCount / 10) || 1) ? 'text-green-600' : 'text-red-600'}
         onAdd={handleAdd}
         onRemove={handleRemove}
+        onUpdate={handleUpdate}
         assignments={assignments.filter(a => a.role === 'İlk Yardımcı')}
         employeeList={employees}
         role="İlk Yardımcı"
