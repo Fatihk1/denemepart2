@@ -60,6 +60,24 @@ const CompanyDetail = () => {
     if (id) fetchCounts();
   }, [id]);
 
+  const handleCompanySave = async (form) => {
+    await supabase.from('companies').update({
+      company_name: form.company_name,
+      tax_office: form.tax_office,
+      tax_number: form.tax_number,
+      nace_code: form.nace_code,
+      sgk_number: form.sgk_number,
+      address: form.address,
+      city: form.city,
+      district: form.district,
+      working_hours: form.working_start + ' - ' + form.working_end,
+      danger_class: form.danger_class
+    }).eq('id', id);
+    setShowCompanyModal(false);
+    const { data } = await supabase.from('companies').select('*').eq('id', id).single();
+    setCompany(data);
+  };
+
   if (!company) return <div className="min-h-screen flex items-center justify-center">Yükleniyor...</div>;
 
   return (
@@ -78,7 +96,13 @@ const CompanyDetail = () => {
             </div>
           </div>
         </div>
-        <CompanyModal open={showCompanyModal} onClose={() => setShowCompanyModal(false)} onSave={() => setShowCompanyModal(false)} company={company} />
+        <CompanyModal 
+          open={showCompanyModal} 
+          onClose={() => setShowCompanyModal(false)} 
+          onSave={handleCompanySave} 
+          onDelete={null}
+          company={company} 
+        />
         <div className="flex gap-4 mb-8 overflow-x-auto whitespace-nowrap">
           {categories.map(cat => (
             <div
