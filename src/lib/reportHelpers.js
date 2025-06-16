@@ -14,4 +14,36 @@ export async function addReportIfNotExists({ company_id, type, target, created_b
       { company_id, type, target, created_by, valid_until, target_id, target_table, status }
     ]);
   }
+}
+
+export async function syncEmployeeHealthReports(company_id) {
+  // 1. O şirkete ait tüm sağlık raporu satırlarını sil
+  await supabase
+    .from('reports')
+    .delete()
+    .eq('company_id', company_id)
+    .eq('type', 'Sağlık Raporu');
+
+  // 2. O şirkete ait tüm çalışanları çek
+  const { data: employees } = await supabase
+    .from('employees')
+    .select('*')
+    .eq('company_id', company_id);
+
+  // 3. Her çalışan için yeni sağlık raporu satırı ekle
+  if (employees && employees.length > 0) {
+    const inserts = employees.map(emp => ({
+      company_id,
+      type: 'Sağlık Raporu',
+      target: `${emp.first_name} ${emp.last_name}`,
+      target_id: emp.id,
+      target_table: 'employees',
+      created_by: 'user',
+      status: emp.health_report ? 'var' : 'yok',
+      valid_until: emp.report_refresh || null
+    }));
+    if (inserts.length > 0) {
+      await supabase.from('reports').insert(inserts);
+    }
+  }
 } 

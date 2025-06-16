@@ -5,7 +5,7 @@ import EmployeeModal from './EmployeeModal';
 import EmployeeDetailModal from './EmployeeDetailModal';
 import useAssignments from '../hooks/useAssignments';
 import usePpeDeliveries from '../hooks/usePpeDeliveries';
-import { addReportIfNotExists } from '../lib/reportHelpers';
+import { addReportIfNotExists, syncEmployeeHealthReports } from '../lib/reportHelpers';
 
 const EmployeeSection = ({ companyId, dangerClass }) => {
   const [employees, setEmployees] = useState([]);
@@ -74,6 +74,7 @@ const EmployeeSection = ({ companyId, dangerClass }) => {
       await addReportIfNotExists({ company_id: companyId, type: 'Yıllık Çalışma Planı', target: '', created_by: 'user' });
     }
     fetchEmployees();
+    await syncEmployeeHealthReports(companyId);
   };
 
   const handleUpdateEmployee = async form => {
@@ -102,6 +103,7 @@ const EmployeeSection = ({ companyId, dangerClass }) => {
       })
       .eq('id', form.id);
     fetchEmployees();
+    await syncEmployeeHealthReports(companyId);
   };
 
   const handleUpdate = async (id) => {
@@ -187,6 +189,7 @@ const EmployeeSection = ({ companyId, dangerClass }) => {
       }
 
       fetchEmployees();
+      await syncEmployeeHealthReports(companyId);
     } catch (error) {
       console.error('Error deleting employee:', error);
       alert('Çalışan silinirken bir hata oluştu');
