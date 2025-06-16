@@ -104,6 +104,94 @@ const EmployeeSection = ({ companyId, dangerClass }) => {
     fetchEmployees();
   };
 
+  const handleUpdate = async (id) => {
+    try {
+      const { data: employee } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (!employee) {
+        throw new Error('Çalışan bulunamadı');
+      }
+
+      const hasHealthReport = form.report_refresh !== null;
+      const { error } = await supabase
+        .from('employees')
+        .update({
+          first_name: form.first_name,
+          last_name: form.last_name,
+          tc_no: form.tc_no,
+          birth_date: form.birth_date,
+          start_date: form.start_date,
+          report_refresh: form.report_refresh,
+          has_health_report: hasHealthReport
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Sağlık raporu durumu değiştiyse ilgili raporu güncelle
+      const { data: existingReport } = await supabase
+        .from('reports')
+        .select('id')
+        .eq('company_id', companyId)
+        .eq('type', 'Sağlık Raporu')
+        .eq('target', `${form.first_name} ${form.last_name}`)
+        .maybeSingle();
+
+      if (existingReport) {
+        await supabase
+          .from('reports')
+          .update({
+            status: hasHealthReport ? 'var' : 'yok',
+            valid_until: hasHealthReport ? form.report_refresh : null
+          })
+          .eq('id', existingReport.id);
+      }
+
+      setShowUpdateModal(false);
+      fetchEmployees();
+    } catch (error) {
+      console.error('Error updating employee:', error);
+      alert('Çalışan güncellenirken bir hata oluştu');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Bu çalışanı silmek istediğinizden emin misiniz?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('employees')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Çalışan silindikten sonra ilgili raporu sil
+      const { data: employee } = await supabase
+        .from('employees')
+        .select('first_name, last_name')
+        .eq('id', id)
+        .single();
+
+      if (employee) {
+        await supabase
+          .from('reports')
+          .delete()
+          .eq('company_id', companyId)
+          .eq('type', 'Sağlık Raporu')
+          .eq('target', `${employee.first_name} ${employee.last_name}`);
+      }
+
+      fetchEmployees();
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+      alert('Çalışan silinirken bir hata oluştu');
+    }
+  };
 
   if (loading) return <div className="text-gray-500">Yükleniyor...</div>;
 
