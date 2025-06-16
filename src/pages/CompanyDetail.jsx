@@ -8,6 +8,7 @@ import PpeSection from '../components/PpeSection';
 import FireSection from '../components/FireSection';
 import AssignmentSection from '../components/AssignmentSection';
 import ReportSection from '../components/ReportSection';
+import CompanyModal from '../components/CompanyModal';
 
 const categories = [
   { key: 'employees', label: 'Çalışanlar' },
@@ -34,6 +35,7 @@ const CompanyDetail = () => {
   const [company, setCompany] = useState(null);
   const [activeTab, setActiveTab] = useState('employees');
   const [counts, setCounts] = useState({});
+  const [showCompanyModal, setShowCompanyModal] = useState(false);
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -63,18 +65,20 @@ const CompanyDetail = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-green-100 p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <h1 className="text-2xl font-bold mb-4">{company.name}</h1>
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 cursor-pointer" onClick={() => setShowCompanyModal(true)}>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-gray-600">Tehlike Sınıfı: {company.danger_class}</p>
+              <div className="font-semibold">{company.name}</div>
+              <div className="text-gray-600">Tehlike Sınıfı: {company.danger_class}</div>
+              <div className="text-gray-600">Çalışan Sayısı: {company.employee_count}</div>
             </div>
             <div>
-              <p className="text-gray-600">Telefon: {company.phone}</p>
-              <p className="text-gray-600">Email: {company.email}</p>
+              <div className="text-gray-600">{company.phone}</div>
+              <div className="text-gray-600">{company.email}</div>
             </div>
           </div>
         </div>
+        <CompanyModal open={showCompanyModal} onClose={() => setShowCompanyModal(false)} onSave={() => setShowCompanyModal(false)} company={company} />
         <div className="flex gap-4 mb-8 overflow-x-auto whitespace-nowrap">
           {categories.map(cat => (
             <div
