@@ -204,11 +204,44 @@ export async function syncAssignmentReports(company_id) {
     const inserts = assignments.map(ass => ({
       company_id,
       type: 'Görev Atama Belgesi',
-      target: ass.employee_id ? String(ass.employee_id) : '',
+      target: (ass.employee_first_name && ass.employee_last_name) ? `${ass.employee_first_name} ${ass.employee_last_name}` : '',
       target_id: ass.id,
       target_table: 'assignments',
       created_by: 'user',
       status: ass.assignment_form === 'Var' ? 'var' : 'yok',
+      valid_until: null
+    }));
+    if (inserts.length > 0) {
+      await supabase.from('reports').insert(inserts);
+    }
+  }
+}
+
+export async function syncFirstAidCertificateReports(company_id) {
+  // 1. O şirkete ait tüm İlkyardım Eğitim Sertifikası raporlarını sil
+  await supabase
+    .from('reports')
+    .delete()
+    .eq('company_id', company_id)
+    .eq('type', 'İlkyardım Eğitim Sertifikası');
+
+  // 2. O şirkete ait tüm 'İlk Yardımcı' atamalarını çek
+  const { data: assignments } = await supabase
+    .from('assignments')
+    .select('*')
+    .eq('company_id', company_id)
+    .eq('role', 'İlk Yardımcı');
+
+  // 3. Her 'İlk Yardımcı' için yeni İlkyardım Eğitim Sertifikası raporu ekle
+  if (assignments && assignments.length > 0) {
+    const inserts = assignments.map(ass => ({
+      company_id,
+      type: 'İlkyardım Eğitim Sertifikası',
+      target: (ass.employee_first_name && ass.employee_last_name) ? `${ass.employee_first_name} ${ass.employee_last_name}` : '',
+      target_id: ass.id,
+      target_table: 'assignments',
+      created_by: 'user',
+      status: ass.first_aid_certificate === 'Var' ? 'var' : 'yok',
       valid_until: null
     }));
     if (inserts.length > 0) {

@@ -2,7 +2,7 @@ import React from 'react';
 import AssignmentCard from './AssignmentCard';
 import useAssignments from '../hooks/useAssignments';
 import useEmployees from '../hooks/useEmployees';
-import { syncAssignmentReports } from '../lib/reportHelpers';
+import { syncAssignmentReports, syncFirstAidCertificateReports } from '../lib/reportHelpers';
 
 const AssignmentSection = ({ companyId, company }) => {
   const { assignments, addAssignment, deleteAssignment } = useAssignments(companyId);
@@ -18,6 +18,7 @@ const AssignmentSection = ({ companyId, company }) => {
       employee_last_name: employee ? employee.last_name : ''
     });
     await syncAssignmentReports(companyId);
+    await syncFirstAidCertificateReports(companyId);
   };
 
   const handleUpdate = async data => {
@@ -29,11 +30,13 @@ const AssignmentSection = ({ companyId, company }) => {
       employee_last_name: employee ? employee.last_name : ''
     });
     await syncAssignmentReports(companyId);
+    await syncFirstAidCertificateReports(companyId);
   };
 
   const handleRemove = async id => {
     await deleteAssignment(id);
     await syncAssignmentReports(companyId);
+    await syncFirstAidCertificateReports(companyId);
   };
 
   return (
