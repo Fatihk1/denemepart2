@@ -3,6 +3,7 @@ import { getDaysLeft } from '../utils';
 import MachineModal from './MachineModal';
 import useMachines from '../hooks/useMachines';
 import { supabase } from '../lib/supabaseClient';
+import { syncMachineMaintenanceReports } from '../lib/reportHelpers';
 
 const MachineSection = ({ companyId }) => {
   const { machines, fetchMachines, loading } = useMachines(companyId);
@@ -22,6 +23,7 @@ const MachineSection = ({ companyId }) => {
       }
     ]);
     fetchMachines();
+    await syncMachineMaintenanceReports(companyId);
   };
 
   const handleUpdateMachine = async form => {
@@ -37,12 +39,14 @@ const MachineSection = ({ companyId }) => {
       })
       .eq('id', form.id);
     fetchMachines();
+    await syncMachineMaintenanceReports(companyId);
   };
 
   const handleDeleteMachine = async machine => {
     if (!machine?.id) return;
     await supabase.from('machines').delete().eq('id', machine.id);
     fetchMachines();
+    await syncMachineMaintenanceReports(companyId);
   };
 
   if (loading) return <div className="text-gray-500">Yükleniyor...</div>;
