@@ -26,6 +26,7 @@ const tableMap = {
   ppe: 'ppe_deliveries',
   fire: 'fire_first_aid_equipments',
   assignments: 'assignments',
+  reports: 'reports'
 };
 
 const CompanyDetail = () => {
