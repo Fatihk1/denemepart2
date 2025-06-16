@@ -110,4 +110,36 @@ export async function syncChemicalMsdsReports(company_id) {
       await supabase.from('reports').insert(inserts);
     }
   }
+}
+
+export async function syncPpeDeliveryReports(company_id) {
+  // 1. O şirkete ait tüm KKD Teslim Tutanağı raporlarını sil
+  await supabase
+    .from('reports')
+    .delete()
+    .eq('company_id', company_id)
+    .eq('type', 'KKD Teslim Tutanağı');
+
+  // 2. O şirkete ait tüm ppe teslimlerini çek
+  const { data: deliveries } = await supabase
+    .from('ppe_deliveries')
+    .select('*')
+    .eq('company_id', company_id);
+
+  // 3. Her teslim için yeni KKD Teslim Tutanağı raporu ekle
+  if (deliveries && deliveries.length > 0) {
+    const inserts = deliveries.map(delivery => ({
+      company_id,
+      type: 'KKD Teslim Tutanağı',
+      target: delivery.employee_first_name && delivery.employee_last_name ? `${delivery.employee_first_name} ${delivery.employee_last_name}` : '',
+      target_id: delivery.id,
+      target_table: 'ppe_deliveries',
+      created_by: 'user',
+      status: delivery.usage_instruction === 'var' ? 'var' : 'yok',
+      valid_until: null
+    }));
+    if (inserts.length > 0) {
+      await supabase.from('reports').insert(inserts);
+    }
+  }
 } 

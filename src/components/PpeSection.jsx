@@ -3,6 +3,7 @@ import PpeDeliveryModal from './PpeDeliveryModal';
 import usePpeDeliveries from '../hooks/usePpeDeliveries';
 import useEmployees from '../hooks/useEmployees';
 import { supabase } from '../lib/supabaseClient';
+import { syncPpeDeliveryReports } from '../lib/reportHelpers';
 
 const PpeSection = ({ companyId, company }) => {
   const { ppeDeliveries, fetchPpeDeliveries, loading } = usePpeDeliveries(companyId);
@@ -26,6 +27,7 @@ const PpeSection = ({ companyId, company }) => {
       }
     ]);
     fetchPpeDeliveries();
+    await syncPpeDeliveryReports(companyId);
   };
 
   const handleUpdatePpeDelivery = async form => {
@@ -44,12 +46,14 @@ const PpeSection = ({ companyId, company }) => {
       })
       .eq('id', form.id);
     fetchPpeDeliveries();
+    await syncPpeDeliveryReports(companyId);
   };
 
   const handleDeletePpeDelivery = async delivery => {
     if (!delivery?.id) return;
     await supabase.from('ppe_deliveries').delete().eq('id', delivery.id);
     fetchPpeDeliveries();
+    await syncPpeDeliveryReports(companyId);
   };
 
   if (loading) return <div className="text-gray-500">Yükleniyor...</div>;
