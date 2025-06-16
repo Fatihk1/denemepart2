@@ -183,4 +183,36 @@ export async function syncFireAidMaintenanceReports(company_id) {
       await supabase.from('reports').insert(inserts);
     }
   }
+}
+
+export async function syncAssignmentReports(company_id) {
+  // 1. O şirkete ait tüm Görev Atama Belgesi raporlarını sil
+  await supabase
+    .from('reports')
+    .delete()
+    .eq('company_id', company_id)
+    .eq('type', 'Görev Atama Belgesi');
+
+  // 2. O şirkete ait tüm atamaları çek
+  const { data: assignments } = await supabase
+    .from('assignments')
+    .select('*')
+    .eq('company_id', company_id);
+
+  // 3. Her atama için yeni Görev Atama Belgesi raporu ekle
+  if (assignments && assignments.length > 0) {
+    const inserts = assignments.map(ass => ({
+      company_id,
+      type: 'Görev Atama Belgesi',
+      target: ass.employee_id ? String(ass.employee_id) : '',
+      target_id: ass.id,
+      target_table: 'assignments',
+      created_by: 'user',
+      status: ass.assignment_form === 'Var' ? 'var' : 'yok',
+      valid_until: null
+    }));
+    if (inserts.length > 0) {
+      await supabase.from('reports').insert(inserts);
+    }
+  }
 } 

@@ -2,6 +2,7 @@ import React from 'react';
 import AssignmentCard from './AssignmentCard';
 import useAssignments from '../hooks/useAssignments';
 import useEmployees from '../hooks/useEmployees';
+import { syncAssignmentReports } from '../lib/reportHelpers';
 
 const AssignmentSection = ({ companyId, company }) => {
   const { assignments, addAssignment, deleteAssignment } = useAssignments(companyId);
@@ -10,10 +11,12 @@ const AssignmentSection = ({ companyId, company }) => {
 
   const handleAdd = async data => {
     await addAssignment({ ...data, company_id: companyId });
+    await syncAssignmentReports(companyId);
   };
 
   const handleRemove = async id => {
     await deleteAssignment(id);
+    await syncAssignmentReports(companyId);
   };
 
   return (
