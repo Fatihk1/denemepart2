@@ -36,6 +36,7 @@ const CompanyDetail = () => {
   const [activeTab, setActiveTab] = useState('employees');
   const [counts, setCounts] = useState({});
   const [showCompanyModal, setShowCompanyModal] = useState(false);
+  const [iller, setIller] = useState([]);
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -60,7 +61,16 @@ const CompanyDetail = () => {
     if (id) fetchCounts();
   }, [id]);
 
+  useEffect(() => {
+    const fetchIller = async () => {
+      const { data } = await supabase.from('iller').select('*');
+      setIller(data);
+    };
+    fetchIller();
+  }, []);
+
   const handleCompanySave = async (form) => {
+    const cityName = iller.find(il => il.id === form.city)?.name || '';
     await supabase.from('companies').update({
       company_name: form.company_name,
       tax_office: form.tax_office,
@@ -68,7 +78,7 @@ const CompanyDetail = () => {
       nace_code: form.nace_code,
       sgk_number: form.sgk_number,
       address: form.address,
-      city: form.city,
+      city: cityName,
       district: form.district,
       working_hours: form.working_start + ' - ' + form.working_end,
       danger_class: form.danger_class
