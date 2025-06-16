@@ -78,4 +78,36 @@ export async function syncMachineMaintenanceReports(company_id) {
       await supabase.from('reports').insert(inserts);
     }
   }
+}
+
+export async function syncChemicalMsdsReports(company_id) {
+  // 1. O şirkete ait tüm MSDS raporlarını sil
+  await supabase
+    .from('reports')
+    .delete()
+    .eq('company_id', company_id)
+    .eq('type', 'MSDS');
+
+  // 2. O şirkete ait tüm kimyasalları çek
+  const { data: chemicals } = await supabase
+    .from('chemicals')
+    .select('*')
+    .eq('company_id', company_id);
+
+  // 3. Her kimyasal için yeni MSDS raporu ekle
+  if (chemicals && chemicals.length > 0) {
+    const inserts = chemicals.map(chem => ({
+      company_id,
+      type: 'MSDS',
+      target: chem.name || chem.chemical_name || '',
+      target_id: chem.id,
+      target_table: 'chemicals',
+      created_by: 'user',
+      status: chem.msds ? 'var' : 'yok',
+      valid_until: null
+    }));
+    if (inserts.length > 0) {
+      await supabase.from('reports').insert(inserts);
+    }
+  }
 } 

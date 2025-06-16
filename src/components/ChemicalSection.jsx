@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ChemicalModal from './ChemicalModal';
 import useChemicals from '../hooks/useChemicals';
 import { supabase } from '../lib/supabaseClient';
+import { syncChemicalMsdsReports } from '../lib/reportHelpers';
 
 const ChemicalSection = ({ companyId }) => {
   const { chemicals, fetchChemicals, loading } = useChemicals(companyId);
@@ -19,6 +20,7 @@ const ChemicalSection = ({ companyId }) => {
       }
     ]);
     fetchChemicals();
+    await syncChemicalMsdsReports(companyId);
   };
 
   const handleUpdateChemical = async form => {
@@ -32,12 +34,14 @@ const ChemicalSection = ({ companyId }) => {
       })
       .eq('id', form.id);
     fetchChemicals();
+    await syncChemicalMsdsReports(companyId);
   };
 
   const handleDeleteChemical = async chemical => {
     if (!chemical?.id) return;
     await supabase.from('chemicals').delete().eq('id', chemical.id);
     fetchChemicals();
+    await syncChemicalMsdsReports(companyId);
   };
 
   if (loading) return <div className="text-gray-500">Yükleniyor...</div>;
