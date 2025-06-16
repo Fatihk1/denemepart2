@@ -63,7 +63,9 @@ const EmployeeSection = ({ companyId, dangerClass }) => {
       target: `${form.first_name} ${form.last_name}`,
       target_id: employeeId,
       target_table: 'employees',
-      created_by: 'user'
+      created_by: 'user',
+      status: hasHealthReport ? 'var' : 'yok',
+      valid_until: hasHealthReport ? form.report_refresh : null
     });
     if (employees.length === 0) {
       await addReportIfNotExists({ company_id: companyId, type: 'İşveren ISG Eğitim Belgesi', target: '', created_by: 'user' });
