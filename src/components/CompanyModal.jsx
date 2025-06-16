@@ -19,13 +19,14 @@ const initialState = {
   danger_class: '',
 };
 
-const CompanyModal = ({ open, onClose, onSave, company }) => {
+const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
   const [form, setForm] = useState(initialState);
   const [edit, setEdit] = useState(false);
   const [initialForm, setInitialForm] = useState(initialState);
   const [filteredDistricts, setFilteredDistricts] = useState([]);
   const [taxOfficeInput, setTaxOfficeInput] = useState('');
   const [showTaxOfficeList, setShowTaxOfficeList] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   const allTaxOffices = Object.values(vdler).flat();
   const sortedIller = [...iller].sort((a, b) => a.name.localeCompare(b.name, 'tr'));
@@ -104,11 +105,21 @@ const CompanyModal = ({ open, onClose, onSave, company }) => {
     setEdit(false);
     onClose();
   };
+  const handleDelete = () => {
+    setShowConfirmDelete(false);
+    if (onDelete) onDelete(company);
+    onClose();
+  };
 
   return open ? (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-xl relative">
         <button className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-2xl" onClick={handleClose}>&times;</button>
+        {edit && onDelete && (
+          <button className="absolute top-2 left-2 text-red-500 hover:text-red-700 text-base font-bold px-3 py-1 border border-red-200 rounded-lg" onClick={() => setShowConfirmDelete(true)}>
+            Sil
+          </button>
+        )}
         <h2 className="text-xl font-bold mb-4">Firma Bilgileri</h2>
         <form onSubmit={handleSubmit} className="space-y-3">
           <input name="company_name" value={form.company_name} onChange={handleChange} required placeholder="Firma Adı" className="w-full px-3 py-2 border rounded-lg font-semibold" disabled={!edit} />
@@ -188,6 +199,17 @@ const CompanyModal = ({ open, onClose, onSave, company }) => {
             )}
           </div>
         </form>
+        {showConfirmDelete && (
+          <div className="fixed inset-0 flex items-center justify-center z-60 bg-black/40">
+            <div className="bg-white p-6 rounded-xl shadow-xl flex flex-col gap-4">
+              <div className="text-lg font-semibold">Firma silinecek, emin misiniz?</div>
+              <div className="flex gap-4 justify-end">
+                <button className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold" onClick={handleDelete}>Evet</button>
+                <button className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold" onClick={() => setShowConfirmDelete(false)}>Hayır</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   ) : null;
