@@ -142,4 +142,45 @@ export async function syncPpeDeliveryReports(company_id) {
       await supabase.from('reports').insert(inserts);
     }
   }
+}
+
+export async function syncFireAidMaintenanceReports(company_id) {
+  // 1. O şirkete ait tüm Periyodik Bakım Çizelgesi (Yangın/İlkyardım) raporlarını sil
+  await supabase
+    .from('reports')
+    .delete()
+    .eq('company_id', company_id)
+    .eq('type', 'Periyodik Bakım Çizelgesi (Yangın/İlkyardım)');
+
+  // 2. O şirkete ait tüm yangın/ilkyardım ekipmanlarını çek
+  const { data: equipments } = await supabase
+    .from('fire_first_aid_equipments')
+    .select('*')
+    .eq('company_id', company_id);
+
+  // 3. Her ekipman için yeni Periyodik Bakım Çizelgesi raporu ekle
+  if (equipments && equipments.length > 0) {
+    const inserts = equipments.map(eq => {
+      // Geçerlilik tarihi: last_check_date + period (gün cinsinden)
+      let valid_until = null;
+      if (eq.last_check_date && eq.period) {
+        const d = new Date(eq.last_check_date);
+        d.setDate(d.getDate() + Number(eq.period));
+        valid_until = d.toISOString().slice(0, 10);
+      }
+      return {
+        company_id,
+        type: 'Periyodik Bakım Çizelgesi (Yangın/İlkyardım)',
+        target: eq.equipment_type || '',
+        target_id: eq.id,
+        target_table: 'fire_first_aid_equipments',
+        created_by: 'user',
+        status: eq.last_check_date ? 'var' : 'yok',
+        valid_until
+      };
+    });
+    if (inserts.length > 0) {
+      await supabase.from('reports').insert(inserts);
+    }
+  }
 } 

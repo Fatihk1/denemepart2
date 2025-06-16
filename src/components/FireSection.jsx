@@ -3,6 +3,7 @@ import FireEquipmentModal from './FireEquipmentModal';
 import useFireEquipments from '../hooks/useFireEquipments';
 import { supabase } from '../lib/supabaseClient';
 import { getFireEquipmentDaysLeft } from '../utils';
+import { syncFireAidMaintenanceReports } from '../lib/reportHelpers';
 
 const FireSection = ({ companyId }) => {
   const { fireEquipments, fetchFireEquipments, loading } = useFireEquipments(companyId);
@@ -22,6 +23,7 @@ const FireSection = ({ companyId }) => {
       }
     ]);
     fetchFireEquipments();
+    await syncFireAidMaintenanceReports(companyId);
   };
 
   const handleUpdate = async form => {
@@ -36,12 +38,14 @@ const FireSection = ({ companyId }) => {
       })
       .eq('id', form.id);
     fetchFireEquipments();
+    await syncFireAidMaintenanceReports(companyId);
   };
 
   const handleDelete = async eqp => {
     if (!eqp?.id) return;
     await supabase.from('fire_first_aid_equipments').delete().eq('id', eqp.id);
     fetchFireEquipments();
+    await syncFireAidMaintenanceReports(companyId);
   };
 
   const handleModalClose = () => {
