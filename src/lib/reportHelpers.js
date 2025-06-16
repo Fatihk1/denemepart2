@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 
-export async function addReportIfNotExists({ company_id, type, target, created_by = 'user', valid_until = null }) {
+export async function addReportIfNotExists({ company_id, type, target, created_by = 'user', valid_until = null, target_id = null, target_table = null }) {
   const { data: existing } = await supabase
     .from('reports')
     .select('id')
@@ -11,7 +11,7 @@ export async function addReportIfNotExists({ company_id, type, target, created_b
 
   if (!existing) {
     await supabase.from('reports').insert([
-      { company_id, type, target, created_by, valid_until }
+      { company_id, type, target, created_by, valid_until, target_id, target_table }
     ]);
   }
 } 

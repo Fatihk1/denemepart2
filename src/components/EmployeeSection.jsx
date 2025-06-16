@@ -36,7 +36,7 @@ const EmployeeSection = ({ companyId, dangerClass }) => {
   const handleAddEmployee = async form => {
     setShowEmployeeModal(false);
     const hasHealthReport = form.has_health_report && form.health_report && form.health_report !== '';
-    await supabase.from('employees').insert([
+    const { data: inserted } = await supabase.from('employees').insert([
       {
         company_id: companyId,
         first_name: form.first_name,
@@ -55,11 +55,14 @@ const EmployeeSection = ({ companyId, dangerClass }) => {
         health_report: hasHealthReport ? form.health_report : null,
         report_refresh: hasHealthReport ? form.report_refresh : null
       }
-    ]);
+    ]).select();
+    const employeeId = inserted?.[0]?.id;
     await addReportIfNotExists({
       company_id: companyId,
       type: 'Sağlık Raporu',
       target: `${form.first_name} ${form.last_name}`,
+      target_id: employeeId,
+      target_table: 'employees',
       created_by: 'user'
     });
     if (employees.length === 0) {
