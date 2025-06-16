@@ -14,6 +14,11 @@ const FireSection = ({ companyId }) => {
     setShowFireModal(false);
     const equipmentType = form.equipment_type === 'Diğer' ? form.equipment_type_other : form.equipment_type;
     if (!equipmentType || equipmentType.trim() === '') return;
+    if (!form.last_check_date) {
+      alert('Lütfen son kontrol tarihini seçiniz!');
+      setShowFireModal(true);
+      return;
+    }
     await supabase.from('fire_first_aid_equipments').insert([
       {
         company_id: companyId,
