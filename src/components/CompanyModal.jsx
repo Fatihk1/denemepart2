@@ -33,6 +33,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
 
   useEffect(() => {
     if (company) {
+      const cityId = iller.find(il => il.name === company.city)?.id || '';
       const initial = {
         company_name: company.name || company.company_name || '',
         tax_office: company.tax_office || '',
@@ -40,7 +41,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
         nace_code: company.nace_code || '',
         sgk_number: company.sgk_number || '',
         address: company.address || '',
-        city: iller.find(il => il.name === company.city)?.id || '',
+        city: cityId,
         district: company.district || '',
         working_start: company.working_hours ? company.working_hours.split(' - ')[0] : '',
         working_end: company.working_hours ? company.working_hours.split(' - ')[1] : '',
@@ -50,9 +51,8 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
       setInitialForm(initial);
       setTaxOfficeInput(company.tax_office || '');
       setEdit(false);
-      // İl seçiliyse ilçeleri filtrele
-      if (initial.city) {
-        setFilteredDistricts(ilceler.filter((ilce) => ilce.il_id === initial.city));
+      if (cityId) {
+        setFilteredDistricts(ilceler.filter((ilce) => ilce.il_id === cityId));
       } else {
         setFilteredDistricts([]);
       }
@@ -68,7 +68,6 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
     }
   };
 
-  // Vergi dairesi autocomplete/select
   const handleTaxOfficeInput = (e) => {
     setTaxOfficeInput(e.target.value);
     setForm(f => ({ ...f, tax_office: '' }));
@@ -88,7 +87,8 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
 
   const handleSubmit = e => {
     e.preventDefault();
-    onSave(form);
+    const cityName = iller.find(il => il.id === form.city)?.name || '';
+    onSave({ ...form, city: cityName });
     setEdit(false);
   };
 
@@ -123,7 +123,6 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
         <h2 className="text-xl font-bold mb-4">Firma Bilgileri</h2>
         <form onSubmit={handleSubmit} className="space-y-3">
           <input name="company_name" value={form.company_name} onChange={handleChange} required placeholder="Firma Adı" className="w-full px-3 py-2 border rounded-lg font-semibold" disabled={!edit} />
-          {/* Vergi Dairesi autocomplete/select */}
           <div className="relative">
             <input
               name="tax_office"
