@@ -27,6 +27,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
   const [taxOfficeInput, setTaxOfficeInput] = useState('');
   const [showTaxOfficeList, setShowTaxOfficeList] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [showConfirmSave, setShowConfirmSave] = useState(false);
 
   const allTaxOffices = Object.values(vdler).flat();
   const sortedIller = [...iller].sort((a, b) => a.name.localeCompare(b.name, 'tr'));
@@ -36,9 +37,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
       const cityId = iller.find(il => il.name === company.city)?.id || '';
       const districts = cityId ? ilceler.filter((ilce) => ilce.il_id === cityId) : [];
       setFilteredDistricts(districts);
-
       const districtName = districts.find(d => d.name === company.district)?.name || '';
-
       const initial = {
         company_name: company.name || company.company_name || '',
         tax_office: company.tax_office || '',
@@ -87,9 +86,14 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
 
   const handleSubmit = e => {
     e.preventDefault();
+    setShowConfirmSave(true);
+  };
+
+  const doSave = () => {
     const cityName = iller.find(il => il.id === form.city)?.name || '';
     onSave({ ...form, city: cityName, district: form.district });
     setEdit(false);
+    setShowConfirmSave(false);
   };
 
   const handleEdit = () => setEdit(true);
@@ -205,6 +209,17 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
               <div className="flex gap-4 justify-end">
                 <button className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold" onClick={handleDelete}>Evet</button>
                 <button className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold" onClick={() => setShowConfirmDelete(false)}>Hayır</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showConfirmSave && (
+          <div className="fixed inset-0 flex items-center justify-center z-60 bg-black/40">
+            <div className="bg-white p-6 rounded-xl shadow-xl flex flex-col gap-4">
+              <div className="text-lg font-semibold">Verileriniz güncellenecektir, onaylıyor musunuz?</div>
+              <div className="flex gap-4 justify-end">
+                <button className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold" onClick={doSave}>Evet</button>
+                <button className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold" onClick={() => setShowConfirmSave(false)}>Hayır</button>
               </div>
             </div>
           </div>
