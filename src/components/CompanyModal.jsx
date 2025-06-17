@@ -96,13 +96,11 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
     setForm(initialForm);
     setTaxOfficeInput(initialForm.tax_office || '');
     setEdit(false);
-    onClose();
   };
   const handleClose = () => {
     setForm(initialForm);
     setTaxOfficeInput(initialForm.tax_office || '');
     setEdit(false);
-    onClose();
   };
   const handleDelete = () => {
     setShowConfirmDelete(false);
