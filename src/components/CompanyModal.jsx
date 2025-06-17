@@ -27,6 +27,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
   const [taxOfficeInput, setTaxOfficeInput] = useState('');
   const [showTaxOfficeList, setShowTaxOfficeList] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [showDeleteStep2, setShowDeleteStep2] = useState(false);
   const [showConfirmSave, setShowConfirmSave] = useState(false);
 
   const allTaxOffices = Object.values(vdler).flat();
@@ -110,20 +111,16 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
     if (onClose) onClose();
   };
   const handleDelete = () => {
+    setShowDeleteStep2(false);
     setShowConfirmDelete(false);
     if (onDelete) onDelete(company);
-    onClose();
+    if (onClose) onClose();
   };
 
   return open ? (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-xl relative">
         <button className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-2xl" onClick={handleClose} type="button">&times;</button>
-        {edit && onDelete && (
-          <button className="absolute top-2 left-2 text-red-500 hover:text-red-700 text-base font-bold px-3 py-1 border border-red-200 rounded-lg" onClick={() => setShowConfirmDelete(true)}>
-            Sil
-          </button>
-        )}
         <h2 className="text-xl font-bold mb-4">Firma Bilgileri</h2>
         <form onSubmit={handleSaveClick} className="space-y-3">
           <input name="company_name" value={form.company_name} onChange={handleChange} required placeholder="Firma Adı" className="w-full px-3 py-2 border rounded-lg font-semibold" disabled={!edit} />
@@ -188,14 +185,16 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
               <input type="time" name="working_end" value={form.working_end} onChange={handleChange} required className="w-full px-3 py-2 border rounded-lg" disabled={!edit} />
             </div>
           </div>
-          <div className="flex gap-3 mt-6 justify-end">
+          <div className="flex gap-3 mt-6 items-center">
             {!edit ? (
               <>
+                <div className="flex-1"></div>
                 <button type="button" onClick={handleEdit} className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md">Düzenle</button>
                 <button type="button" onClick={handleClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">Kapat</button>
               </>
             ) : (
               <>
+                <button type="button" onClick={() => setShowConfirmDelete(true)} className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md mr-auto">Sil</button>
                 <button type="button" onClick={handleSaveClick} className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md">Kaydet</button>
                 <button type="button" onClick={handleCancel} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">Kapat</button>
               </>
@@ -205,10 +204,21 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
         {showConfirmDelete && (
           <div className="fixed inset-0 flex items-center justify-center z-60 bg-black/40">
             <div className="bg-white p-6 rounded-xl shadow-xl flex flex-col gap-4">
-              <div className="text-lg font-semibold">Firma silinecek, emin misiniz?</div>
+              <div className="text-lg font-semibold text-red-700">Firmanızı silmek üzeresiniz. Bu işlem <b>GERİ ALINAMAZ</b>.</div>
+              <div className="flex gap-4 justify-end">
+                <button className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold" onClick={() => { setShowConfirmDelete(false); setShowDeleteStep2(true); }}>Devam Et</button>
+                <button className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold" onClick={() => setShowConfirmDelete(false)}>Kapat</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showDeleteStep2 && (
+          <div className="fixed inset-0 flex items-center justify-center z-60 bg-black/40">
+            <div className="bg-white p-6 rounded-xl shadow-xl flex flex-col gap-4">
+              <div className="text-lg font-semibold text-red-700">Firmanızı sildiğinizde aşağıdaki verileriniz de silinecektir:<br/>Çalışanlar, Makineler, KKD, ve firmanıza atadığınız Tüm Raporlar.<br/>Onaylıyor musunuz?</div>
               <div className="flex gap-4 justify-end">
                 <button className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold" onClick={handleDelete}>Evet</button>
-                <button className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold" onClick={() => setShowConfirmDelete(false)}>Hayır</button>
+                <button className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold" onClick={() => setShowDeleteStep2(false)}>Hayır</button>
               </div>
             </div>
           </div>
