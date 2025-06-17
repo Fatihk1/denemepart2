@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import EmployeeSection from '../components/EmployeeSection';
 import MachineSection from '../components/MachineSection';
@@ -38,6 +38,7 @@ const CompanyDetail = () => {
   const [activeTab, setActiveTab] = useState('employees');
   const [counts, setCounts] = useState({});
   const [showCompanyModal, setShowCompanyModal] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -80,6 +81,27 @@ const CompanyDetail = () => {
     setCompany(data);
   };
 
+  const handleCompanyDelete = async (company) => {
+    if (!id) return;
+    // Alt tablolardan sil
+    const tables = [
+      'employees',
+      'machines',
+      'chemicals',
+      'ppe_deliveries',
+      'fire_first_aid_equipments',
+      'assignments',
+      'reports',
+    ];
+    for (const table of tables) {
+      await supabase.from(table).delete().eq('company_id', id);
+    }
+    // Şirketi sil
+    await supabase.from('companies').delete().eq('id', id);
+    // Ana sayfaya yönlendir
+    navigate('/');
+  };
+
   if (!company) return <div className="min-h-screen flex items-center justify-center">Yükleniyor...</div>;
 
   return (
@@ -102,7 +124,7 @@ const CompanyDetail = () => {
           open={showCompanyModal} 
           onClose={() => setShowCompanyModal(false)} 
           onSave={handleCompanySave} 
-          onDelete={null}
+          onDelete={handleCompanyDelete}
           company={company} 
         />
         <div className="flex gap-4 mb-8 overflow-x-auto whitespace-nowrap">
