@@ -209,7 +209,8 @@ export async function syncAssignmentReports(company_id) {
       target_table: 'assignments',
       created_by: 'user',
       status: ass.assignment_form === 'Var' ? 'var' : 'yok',
-      valid_until: null
+      valid_until: null,
+      gorev: ass.role
     }));
     if (inserts.length > 0) {
       await supabase.from('reports').insert(inserts);
