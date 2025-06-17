@@ -139,7 +139,7 @@ const CompanyDetail = () => {
             </div>
           ))}
         </div>
-        {activeTab === 'employees' && <EmployeeSection companyId={id} dangerClass={company.danger_class} />}
+        {activeTab === 'employees' && <EmployeeSection companyId={id} dangerClass={company.danger_class} companyName={company.name || company.company_name} company={company} />}
         {activeTab === 'machines' && <MachineSection companyId={id} />}
         {activeTab === 'chemicals' && <ChemicalSection companyId={id} />}
         {activeTab === 'ppe' && <PpeSection companyId={id} company={company} />}

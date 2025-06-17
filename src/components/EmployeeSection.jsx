@@ -68,11 +68,11 @@ const EmployeeSection = ({ companyId, dangerClass }) => {
       valid_until: hasHealthReport ? form.report_refresh : null
     });
     if (employees.length === 0) {
-      await addReportIfNotExists({ company_id: companyId, type: 'İşveren ISG Eğitim Belgesi', target: '', created_by: 'user' });
-      await addReportIfNotExists({ company_id: companyId, type: 'Risk Değerlendirme Raporu', target: '', created_by: 'user' });
-      await addReportIfNotExists({ company_id: companyId, type: 'Acil Durum Planı', target: '', created_by: 'user' });
-      await addReportIfNotExists({ company_id: companyId, type: 'Yıllık Çalışma Planı', target: '', created_by: 'user' });
-      await addReportIfNotExists({ company_id: companyId, type: 'Çalışan ISG Eğitim Belgesi', target: '', created_by: 'user' });
+      await addReportIfNotExists({ company_id: companyId, type: 'İşveren ISG Eğitim Belgesi', target: companyName, target_id: companyId, created_by: 'user' });
+      await addReportIfNotExists({ company_id: companyId, type: 'Risk Değerlendirme Raporu', target: companyName, target_id: companyId, created_by: 'user' });
+      await addReportIfNotExists({ company_id: companyId, type: 'Acil Durum Planı', target: companyName, target_id: companyId, created_by: 'user' });
+      await addReportIfNotExists({ company_id: companyId, type: 'Yıllık Çalışma Planı', target: companyName, target_id: companyId, created_by: 'user' });
+      await addReportIfNotExists({ company_id: companyId, type: 'Çalışan ISG Eğitim Belgesi', target: companyName, target_id: companyId, created_by: 'user' });
     }
     fetchEmployees();
     await syncEmployeeHealthReports(companyId);
