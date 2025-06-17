@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import vdler from '../data/vd.json';
-import iller from '../data/il.json';
-import ilceler from '../data/ilce.json';
+// import iller from '../data/il.json';
+// import ilceler from '../data/ilce.json';
 
 const DANGER_CLASSES = ['Az Tehlikeli', 'Tehlikeli', 'Çok Tehlikeli'];
 
@@ -19,7 +19,7 @@ const initialState = {
   danger_class: '',
 };
 
-const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
+const CompanyModal = ({ open, onClose, onSave, company, onDelete, iller, ilceler }) => {
   const [form, setForm] = useState(initialState);
   const [edit, setEdit] = useState(false);
   const [initialForm, setInitialForm] = useState(initialState);
@@ -30,7 +30,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
   const [showConfirmSave, setShowConfirmSave] = useState(false);
 
   const allTaxOffices = Object.values(vdler).flat();
-  const sortedIller = [...iller].sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+  const sortedIller = iller ? [...iller].sort((a, b) => a.name.localeCompare(b.name, 'tr')) : [];
 
   useEffect(() => {
     if (!company || !iller || iller.length === 0) return;
@@ -55,7 +55,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
     setInitialForm(initial);
     setTaxOfficeInput(company.tax_office || '');
     setEdit(false);
-  }, [company, open, iller]);
+  }, [company, open, iller, ilceler]);
 
   const handleChange = e => {
     const { name, value } = e.target;

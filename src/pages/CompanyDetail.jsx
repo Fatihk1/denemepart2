@@ -37,6 +37,7 @@ const CompanyDetail = () => {
   const [counts, setCounts] = useState({});
   const [showCompanyModal, setShowCompanyModal] = useState(false);
   const [iller, setIller] = useState([]);
+  const [ilceler, setIlceler] = useState([]);
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -66,7 +67,12 @@ const CompanyDetail = () => {
       const { data } = await supabase.from('iller').select('*');
       setIller(data);
     };
+    const fetchIlceler = async () => {
+      const { data } = await supabase.from('ilceler').select('*');
+      setIlceler(data);
+    };
     fetchIller();
+    fetchIlceler();
   }, []);
 
   const handleCompanySave = async (form) => {
@@ -112,6 +118,8 @@ const CompanyDetail = () => {
           onSave={handleCompanySave} 
           onDelete={null}
           company={company} 
+          iller={iller}
+          ilceler={ilceler}
         />
         <div className="flex gap-4 mb-8 overflow-x-auto whitespace-nowrap">
           {categories.map(cat => (
