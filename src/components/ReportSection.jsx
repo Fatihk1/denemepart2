@@ -65,8 +65,10 @@ const ReportSection = ({ companyId }) => {
     // Görev Atama Belgeleri için görev adı da göster
     if (group.key === 'gorev') {
       groupReports = groupReports.map(r => ({ ...r, display: `${r.target} ${r.gorev ? '(' + r.gorev + ')' : ''}`.trim() }));
-    } else if (group.key === 'makine') {
-      groupReports = groupReports.map(r => ({ ...r, display: `${r.type} ${r.target ? '(' + r.target + ')' : ''}`.trim() }));
+    } else if (group.key === 'genel') {
+      groupReports = groupReports.map(r => ({ ...r, display: r.type }));
+    } else if (group.key === 'ekipman' || group.key === 'makine') {
+      groupReports = groupReports.map(r => ({ ...r, display: `${r.type}${r.target ? ' (' + r.target + ')' : ''}`.trim() }));
     } else {
       groupReports = groupReports.map(r => ({ ...r, display: r.target || r.type }));
     }
