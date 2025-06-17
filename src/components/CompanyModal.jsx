@@ -34,6 +34,11 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
   useEffect(() => {
     if (company) {
       const cityId = iller.find(il => il.name === company.city)?.id || '';
+      const districts = cityId ? ilceler.filter((ilce) => ilce.il_id === cityId) : [];
+      setFilteredDistricts(districts);
+
+      const districtName = districts.find(d => d.name === company.district)?.name || '';
+
       const initial = {
         company_name: company.name || company.company_name || '',
         tax_office: company.tax_office || '',
@@ -42,7 +47,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
         sgk_number: company.sgk_number || '',
         address: company.address || '',
         city: cityId,
-        district: company.district || '',
+        district: districtName,
         working_start: company.working_hours ? company.working_hours.split(' - ')[0] : '',
         working_end: company.working_hours ? company.working_hours.split(' - ')[1] : '',
         danger_class: company.danger_class || '',
@@ -51,11 +56,6 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
       setInitialForm(initial);
       setTaxOfficeInput(company.tax_office || '');
       setEdit(false);
-      if (cityId) {
-        setFilteredDistricts(ilceler.filter((ilce) => ilce.il_id === cityId));
-      } else {
-        setFilteredDistricts([]);
-      }
     }
   }, [company, open]);
 
