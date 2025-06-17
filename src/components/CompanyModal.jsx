@@ -33,30 +33,29 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
   const sortedIller = [...iller].sort((a, b) => a.name.localeCompare(b.name, 'tr'));
 
   useEffect(() => {
-    if (company) {
-      const cityId = iller.find(il => il.name === company.city)?.id || '';
-      const districts = cityId ? ilceler.filter((ilce) => ilce.il_id === cityId) : [];
-      setFilteredDistricts(districts);
-      const districtName = districts.find(d => d.name === company.district)?.name || '';
-      const initial = {
-        company_name: company.name || company.company_name || '',
-        tax_office: company.tax_office || '',
-        tax_number: company.tax_number || '',
-        nace_code: company.nace_code || '',
-        sgk_number: company.sgk_number || '',
-        address: company.address || '',
-        city: cityId,
-        district: districtName,
-        working_start: company.working_hours ? company.working_hours.split(' - ')[0] : '',
-        working_end: company.working_hours ? company.working_hours.split(' - ')[1] : '',
-        danger_class: company.danger_class || '',
-      };
-      setForm(initial);
-      setInitialForm(initial);
-      setTaxOfficeInput(company.tax_office || '');
-      setEdit(false);
-    }
-  }, [company, open]);
+    if (!company || !iller || iller.length === 0) return;
+    const cityId = iller.find(il => il.name === company.city)?.id || '';
+    const districts = cityId ? ilceler.filter((ilce) => ilce.il_id === cityId) : [];
+    setFilteredDistricts(districts);
+    const districtName = districts.find(d => d.name === company.district)?.name || '';
+    const initial = {
+      company_name: company.name || company.company_name || '',
+      tax_office: company.tax_office || '',
+      tax_number: company.tax_number || '',
+      nace_code: company.nace_code || '',
+      sgk_number: company.sgk_number || '',
+      address: company.address || '',
+      city: cityId,
+      district: districtName,
+      working_start: company.working_hours ? company.working_hours.split(' - ')[0] : '',
+      working_end: company.working_hours ? company.working_hours.split(' - ')[1] : '',
+      danger_class: company.danger_class || '',
+    };
+    setForm(initial);
+    setInitialForm(initial);
+    setTaxOfficeInput(company.tax_office || '');
+    setEdit(false);
+  }, [company, open, iller]);
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -86,14 +85,10 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
 
   const handleSubmit = e => {
     e.preventDefault();
-    setShowConfirmSave(true);
-  };
-
-  const doSave = () => {
+    if (!iller || iller.length === 0) return;
     const cityName = iller.find(il => il.id === form.city)?.name || '';
     onSave({ ...form, city: cityName, district: form.district });
     setEdit(false);
-    setShowConfirmSave(false);
   };
 
   const handleEdit = () => setEdit(true);
@@ -218,7 +213,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
             <div className="bg-white p-6 rounded-xl shadow-xl flex flex-col gap-4">
               <div className="text-lg font-semibold">Verileriniz güncellenecektir, onaylıyor musunuz?</div>
               <div className="flex gap-4 justify-end">
-                <button className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold" onClick={doSave}>Evet</button>
+                <button className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold" onClick={handleSubmit}>Evet</button>
                 <button className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold" onClick={() => setShowConfirmSave(false)}>Hayır</button>
               </div>
             </div>
