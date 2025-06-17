@@ -99,7 +99,7 @@ const CompanyDetail = () => {
     // Şirketi sil
     await supabase.from('companies').delete().eq('id', id);
     // Ana sayfaya yönlendir
-    navigate('/');
+    navigate('/my-companies');
   };
 
   if (!company) return <div className="min-h-screen flex items-center justify-center">Yükleniyor...</div>;
