@@ -34,6 +34,11 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
   useEffect(() => {
     if (company) {
       const cityId = iller.find(il => il.name === company.city)?.id || '';
+      let districtName = company.district || '';
+      if (cityId && company.district) {
+        const foundDistrict = ilceler.find(ilce => ilce.il_id === cityId && ilce.name === company.district);
+        districtName = foundDistrict ? foundDistrict.name : '';
+      }
       const initial = {
         company_name: company.name || company.company_name || '',
         tax_office: company.tax_office || '',
@@ -42,7 +47,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
         sgk_number: company.sgk_number || '',
         address: company.address || '',
         city: cityId,
-        district: company.district || '',
+        district: districtName,
         working_start: company.working_hours ? company.working_hours.split(' - ')[0] : '',
         working_end: company.working_hours ? company.working_hours.split(' - ')[1] : '',
         danger_class: company.danger_class || '',
@@ -88,7 +93,8 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
   const handleSubmit = e => {
     e.preventDefault();
     const cityName = iller.find(il => il.id === form.city)?.name || '';
-    onSave({ ...form, city: cityName });
+    const districtName = form.district;
+    onSave({ ...form, city: cityName, district: districtName });
     setEdit(false);
   };
 
