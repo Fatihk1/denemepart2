@@ -7,7 +7,7 @@ import useAssignments from '../hooks/useAssignments';
 import usePpeDeliveries from '../hooks/usePpeDeliveries';
 import { addReportIfNotExists, syncEmployeeHealthReports } from '../lib/reportHelpers';
 
-const EmployeeSection = ({ companyId, dangerClass }) => {
+const EmployeeSection = ({ companyId, dangerClass, companyName }) => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showEmployeeModal, setShowEmployeeModal] = useState(false);
