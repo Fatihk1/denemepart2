@@ -83,12 +83,17 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
     vd.vdadi.toLowerCase().startsWith(taxOfficeInput.toLowerCase())
   ).slice(0, 10);
 
-  const handleSubmit = e => {
+  const handleSaveClick = (e) => {
     e.preventDefault();
+    setShowConfirmSave(true);
+  };
+
+  const handleConfirmSave = () => {
     if (!iller || iller.length === 0) return;
     const cityName = iller.find(il => il.id === form.city)?.name || '';
     onSave({ ...form, city: cityName, district: form.district });
     setEdit(false);
+    setShowConfirmSave(false);
   };
 
   const handleEdit = () => setEdit(true);
@@ -96,11 +101,13 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
     setForm(initialForm);
     setTaxOfficeInput(initialForm.tax_office || '');
     setEdit(false);
+    if (onClose) onClose();
   };
   const handleClose = () => {
     setForm(initialForm);
     setTaxOfficeInput(initialForm.tax_office || '');
     setEdit(false);
+    if (onClose) onClose();
   };
   const handleDelete = () => {
     setShowConfirmDelete(false);
@@ -111,14 +118,14 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
   return open ? (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-xl relative">
-        <button className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-2xl" onClick={handleClose}>&times;</button>
+        <button className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-2xl" onClick={handleClose} type="button">&times;</button>
         {edit && onDelete && (
           <button className="absolute top-2 left-2 text-red-500 hover:text-red-700 text-base font-bold px-3 py-1 border border-red-200 rounded-lg" onClick={() => setShowConfirmDelete(true)}>
             Sil
           </button>
         )}
         <h2 className="text-xl font-bold mb-4">Firma Bilgileri</h2>
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSaveClick} className="space-y-3">
           <input name="company_name" value={form.company_name} onChange={handleChange} required placeholder="Firma Adı" className="w-full px-3 py-2 border rounded-lg font-semibold" disabled={!edit} />
           <div className="relative">
             <input
@@ -189,7 +196,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
               </>
             ) : (
               <>
-                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md">Kaydet</button>
+                <button type="button" onClick={handleSaveClick} className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md">Kaydet</button>
                 <button type="button" onClick={handleCancel} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">Kapat</button>
               </>
             )}
@@ -211,7 +218,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
             <div className="bg-white p-6 rounded-xl shadow-xl flex flex-col gap-4">
               <div className="text-lg font-semibold">Verileriniz güncellenecektir, onaylıyor musunuz?</div>
               <div className="flex gap-4 justify-end">
-                <button className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold" onClick={handleSubmit}>Evet</button>
+                <button className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold" onClick={handleConfirmSave}>Evet</button>
                 <button className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold" onClick={() => setShowConfirmSave(false)}>Hayır</button>
               </div>
             </div>
