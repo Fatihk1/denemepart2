@@ -9,6 +9,8 @@ import FireSection from '../components/FireSection';
 import AssignmentSection from '../components/AssignmentSection';
 import ReportSection from '../components/ReportSection';
 import CompanyModal from '../components/CompanyModal';
+import iller from '../data/il.json';
+import ilceler from '../data/ilce.json';
 
 const categories = [
   { key: 'employees', label: 'Çalışanlar' },
@@ -36,8 +38,6 @@ const CompanyDetail = () => {
   const [activeTab, setActiveTab] = useState('employees');
   const [counts, setCounts] = useState({});
   const [showCompanyModal, setShowCompanyModal] = useState(false);
-  const [iller, setIller] = useState([]);
-  const [ilceler, setIlceler] = useState([]);
 
   useEffect(() => {
     const fetchCompany = async () => {
@@ -62,21 +62,7 @@ const CompanyDetail = () => {
     if (id) fetchCounts();
   }, [id]);
 
-  useEffect(() => {
-    const fetchIller = async () => {
-      const { data } = await supabase.from('iller').select('*');
-      setIller(data);
-    };
-    const fetchIlceler = async () => {
-      const { data } = await supabase.from('ilceler').select('*');
-      setIlceler(data);
-    };
-    fetchIller();
-    fetchIlceler();
-  }, []);
-
   const handleCompanySave = async (form) => {
-    const cityName = iller.find(il => il.id === form.city)?.name || '';
     await supabase.from('companies').update({
       company_name: form.company_name,
       tax_office: form.tax_office,
@@ -84,7 +70,7 @@ const CompanyDetail = () => {
       nace_code: form.nace_code,
       sgk_number: form.sgk_number,
       address: form.address,
-      city: cityName,
+      city: form.city,
       district: form.district,
       working_hours: form.working_start + ' - ' + form.working_end,
       danger_class: form.danger_class
@@ -118,8 +104,6 @@ const CompanyDetail = () => {
           onSave={handleCompanySave} 
           onDelete={null}
           company={company} 
-          iller={iller}
-          ilceler={ilceler}
         />
         <div className="flex gap-4 mb-8 overflow-x-auto whitespace-nowrap">
           {categories.map(cat => (
