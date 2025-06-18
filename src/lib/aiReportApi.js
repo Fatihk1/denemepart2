@@ -1,5 +1,5 @@
-// n8n production webhook linki
-const N8N_WEBHOOK_URL = 'https://n8n.srv807771.hstgr.cloud/webhook/450787bc-537b-4005-b4c8-c1efdc2aa0cd';
+// n8n test webhook linki
+const N8N_TEST_WEBHOOK_URL = 'https://n8n.srv807771.hstgr.cloud/webhook-test/450787bc-537b-4005-b4c8-c1efdc2aa0cd';
 
 export async function sendRiskImagesToWebhook(selectedImages, selectedCompanyId) {
   if (!selectedImages || selectedImages.length === 0) {
@@ -14,7 +14,7 @@ export async function sendRiskImagesToWebhook(selectedImages, selectedCompanyId)
     formData.append('companyId', selectedCompanyId);
   }
   try {
-    const response = await fetch(N8N_WEBHOOK_URL, {
+    const response = await fetch(N8N_TEST_WEBHOOK_URL, {
       method: 'POST',
       body: formData,
     });
