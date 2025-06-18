@@ -191,7 +191,7 @@ const AiReporter = () => {
                       {selectedImages.map((img, idx) => (
                         <div key={img.url} className="relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border border-gray-300 bg-gray-100 group">
                           <img src={img.url} alt={`Seçilen ${idx+1}`} className="object-cover w-full h-full" />
-                          <button type="button" onClick={() => handleRemoveImage(img.url)} className="absolute -top-3 -right-3 bg-white/90 rounded-full p-1.5 shadow-lg group-hover:scale-110 transition border border-gray-300 w-7 h-7 flex items-center justify-center">
+                          <button type="button" onClick={() => handleRemoveImage(img.url)} className="absolute top-1.5 right-1.5 bg-white/90 rounded-full p-1.5 shadow-lg group-hover:scale-110 transition border border-gray-300 w-7 h-7 flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-red-500"><path fillRule="evenodd" d="M10 8.586l4.95-4.95a1 1 0 111.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10l-4.95-4.95A1 1 0 115.05 3.636L10 8.586z" clipRule="evenodd" /></svg>
                           </button>
                         </div>
