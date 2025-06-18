@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { sendRiskImagesToWebhook } from '../lib/aiReportApi';
 
 const GROUPS = [
   {
@@ -198,7 +199,7 @@ const AiReporter = () => {
                       ))}
                     </div>
                   )}
-                  <button className="w-full py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition" onClick={() => alert('n8n entegrasyonu burada olacak')}>AI ile Tehlike Analizi Başlat</button>
+                  <button className="w-full py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition" onClick={() => sendRiskImagesToWebhook(selectedImages, selectedCompanyId)}>AI ile Tehlike Analizi Başlat</button>
                   <button className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold mt-2" onClick={handleClosePopup}>Kapat</button>
                 </div>
               )}
