@@ -114,14 +114,69 @@ const AiReporter = () => {
   const renderPopup = () => {
     if (!popupReport) return null;
     const isAI = AI_REPORTABLE.includes(popupReport.type) || (popupReport.type === 'Görev Atama Belgesi');
+    const isRisk = popupReport.type === 'Risk Değerlendirme Raporu';
+    const [showUpload, setShowUpload] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
+
+    // Görsel seçilince önizleme
+    const handleImageChange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        setSelectedImage(file);
+        setPreviewUrl(URL.createObjectURL(file));
+      }
+    };
+
+    // Kamera ile fotoğraf çekme (mobilde input accept="capture")
+    const handleTakePhoto = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        setSelectedImage(file);
+        setPreviewUrl(URL.createObjectURL(file));
+      }
+    };
+
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
-        <div className="bg-white p-6 rounded-xl shadow-xl min-w-[320px] max-w-md w-full flex flex-col gap-4">
+        <div className={`bg-white p-6 rounded-xl shadow-xl min-w-[320px] max-w-md w-full flex flex-col gap-4 transition-all duration-500 ${showUpload ? 'max-h-[90vh]' : ''}`} style={{ maxHeight: showUpload ? '90vh' : '320px' }}>
           <div className="text-lg font-bold mb-2">{popupReport.display || popupReport.type}</div>
           {isAI ? (
             <>
-              <button className="w-full py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition" onClick={() => alert('AI rapor oluşturma yakında!')}>AI Rapor Oluştur</button>
-              <button className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold mt-2" onClick={() => setPopupReport(null)}>Kapat</button>
+              {!showUpload && isRisk && (
+                <button className="w-full py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition" onClick={() => setShowUpload(true)}>AI Rapor Oluştur</button>
+              )}
+              {showUpload && isRisk && (
+                <div className="flex flex-col gap-4 animate-slideDown">
+                  <div className="flex flex-col gap-2">
+                    <label className="font-semibold">Görsel Yükle veya Fotoğraf Çek</label>
+                    <div className="flex gap-2">
+                      <label className="flex-1 cursor-pointer bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-2 rounded-lg text-center">
+                        Galeriden Yükle
+                        <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                      </label>
+                      <label className="flex-1 cursor-pointer bg-green-100 hover:bg-green-200 text-green-700 px-3 py-2 rounded-lg text-center">
+                        Fotoğraf Çek
+                        <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleTakePhoto} />
+                      </label>
+                    </div>
+                  </div>
+                  {previewUrl && (
+                    <div className="flex flex-col items-center gap-2">
+                      <img src={previewUrl} alt="Önizleme" className="max-h-40 rounded-lg border" />
+                      <span className="text-xs text-gray-500">Seçilen görsel</span>
+                    </div>
+                  )}
+                  <button className="w-full py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition" onClick={() => alert('n8n entegrasyonu burada olacak')}>AI ile Tehlike Analizi Başlat</button>
+                  <button className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold mt-2" onClick={() => setPopupReport(null)}>Kapat</button>
+                </div>
+              )}
+              {!isRisk && (
+                <>
+                  <button className="w-full py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition" onClick={() => alert('AI rapor oluşturma yakında!')}>AI Rapor Oluştur</button>
+                  <button className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold mt-2" onClick={() => setPopupReport(null)}>Kapat</button>
+                </>
+              )}
             </>
           ) : (
             <>
