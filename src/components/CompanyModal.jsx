@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import vdler from '../data/vd.json';
 import iller from '../data/il.json';
 import ilceler from '../data/ilce.json';
+import naceList from '../data/nace.json';
 
 const DANGER_CLASSES = ['Az Tehlikeli', 'Tehlikeli', 'Çok Tehlikeli'];
 
@@ -10,6 +11,7 @@ const initialState = {
   tax_office: '',
   tax_number: '',
   nace_code: '',
+  faaliyet_tanimi: '',
   sgk_number: '',
   address: '',
   city: '',
@@ -29,6 +31,8 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showDeleteStep2, setShowDeleteStep2] = useState(false);
   const [showConfirmSave, setShowConfirmSave] = useState(false);
+  const [naceInput, setNaceInput] = useState('');
+  const [showNaceList, setShowNaceList] = useState(false);
 
   const allTaxOffices = Object.values(vdler).flat();
   const sortedIller = [...iller].sort((a, b) => a.name.localeCompare(b.name, 'tr'));
@@ -44,6 +48,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
       tax_office: company.tax_office || '',
       tax_number: company.tax_number || '',
       nace_code: company.nace_code || '',
+      faaliyet_tanimi: company.faaliyet_tanimi || '',
       sgk_number: company.sgk_number || '',
       address: company.address || '',
       city: cityId,
@@ -55,6 +60,7 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
     setForm(initial);
     setInitialForm(initial);
     setTaxOfficeInput(company.tax_office || '');
+    setNaceInput(company.nace_code || '');
     setEdit(false);
   }, [company, open]);
 
@@ -84,6 +90,24 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
     vd.vdadi.toLowerCase().startsWith(taxOfficeInput.toLowerCase())
   ).slice(0, 10);
 
+  const handleNaceInput = (e) => {
+    setNaceInput(e.target.value);
+    setForm(f => ({ ...f, nace_code: '', faaliyet_tanimi: '', danger_class: '' }));
+    setShowNaceList(true);
+  };
+  const handleNaceSelect = (nace) => {
+    setForm(f => ({ ...f, nace_code: nace.nace_kod, faaliyet_tanimi: nace.tanim, danger_class: nace.tehlike_sinifi }));
+    setNaceInput(nace.nace_kod);
+    setShowNaceList(false);
+  };
+  const handleNaceBlur = () => {
+    setTimeout(() => setShowNaceList(false), 100);
+  };
+  const filteredNace = naceInput.length < 2 ? [] : naceList.filter(nace =>
+    nace.nace_kod.startsWith(naceInput) ||
+    nace.tanim.toLowerCase().includes(naceInput.toLowerCase())
+  ).slice(0, 10);
+
   const handleSaveClick = (e) => {
     e.preventDefault();
     setShowConfirmSave(true);
@@ -101,12 +125,14 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
   const handleCancel = () => {
     setForm(initialForm);
     setTaxOfficeInput(initialForm.tax_office || '');
+    setNaceInput(initialForm.nace_code || '');
     setEdit(false);
     if (onClose) onClose();
   };
   const handleClose = () => {
     setForm(initialForm);
     setTaxOfficeInput(initialForm.tax_office || '');
+    setNaceInput(initialForm.nace_code || '');
     setEdit(false);
     if (onClose) onClose();
   };
@@ -152,7 +178,34 @@ const CompanyModal = ({ open, onClose, onSave, company, onDelete }) => {
             )}
           </div>
           <input name="tax_number" value={form.tax_number} onChange={handleChange} placeholder="Vergi Numarası" className="w-full px-3 py-2 border rounded-lg" disabled={!edit} />
-          <input name="nace_code" value={form.nace_code} onChange={handleChange} placeholder="NACE Kodu" className="w-full px-3 py-2 border rounded-lg" disabled={!edit} />
+          <div className="relative">
+            <input
+              name="nace_code"
+              value={naceInput}
+              onChange={handleNaceInput}
+              onFocus={() => setShowNaceList(true)}
+              onBlur={handleNaceBlur}
+              required
+              placeholder="NACE Kodu veya Faaliyet"
+              className="w-full px-3 py-2 border rounded-lg"
+              autoComplete="off"
+              disabled={!edit}
+            />
+            {showNaceList && filteredNace.length > 0 && (
+              <ul className="absolute z-10 left-0 right-0 bg-white border rounded-lg shadow max-h-48 overflow-auto mt-1">
+                {filteredNace.map((nace) => (
+                  <li
+                    key={nace.nace_kod}
+                    className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+                    onMouseDown={() => handleNaceSelect(nace)}
+                  >
+                    <span className="font-mono font-semibold">{nace.nace_kod}</span> - {nace.tanim}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <input name="faaliyet_tanimi" value={form.faaliyet_tanimi} readOnly placeholder="Faaliyet Tanımı" className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-gray-700" />
           <select name="danger_class" value={form.danger_class || ''} onChange={handleChange} required className="w-full px-3 py-2 border rounded-lg" disabled={!edit}>
             <option value="">Tehlike Sınıfı Seçiniz</option>
             <option value="Az Tehlikeli">Az Tehlikeli</option>

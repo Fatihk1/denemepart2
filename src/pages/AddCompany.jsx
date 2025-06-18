@@ -4,12 +4,14 @@ import { supabase } from '../lib/supabaseClient';
 import vdler from '../data/vd.json';
 import iller from '../data/il.json';
 import ilceler from '../data/ilce.json';
+import naceList from '../data/nace.json';
 
 const initialState = {
   company_name: '',
   tax_office: '',
   tax_number: '',
   nace_code: '',
+  faaliyet_tanimi: '',
   sgk_number: '',
   address: '',
   city: '',
@@ -26,6 +28,8 @@ const AddCompany = () => {
   const [filteredDistricts, setFilteredDistricts] = useState([]);
   const [taxOfficeInput, setTaxOfficeInput] = useState('');
   const [showTaxOfficeList, setShowTaxOfficeList] = useState(false);
+  const [naceInput, setNaceInput] = useState('');
+  const [showNaceList, setShowNaceList] = useState(false);
   const navigate = useNavigate();
 
   // Vergi dairesi listesi düzleştiriliyor
@@ -60,6 +64,26 @@ const AddCompany = () => {
   };
   const handleTaxOfficeBlur = () => {
     setTimeout(() => setShowTaxOfficeList(false), 100); // seçim için kısa gecikme
+  };
+
+  // NACE kodu için filtreleme
+  const filteredNace = naceInput.length < 2 ? [] : naceList.filter(nace =>
+    nace.nace_kod.startsWith(naceInput) ||
+    nace.tanim.toLowerCase().includes(naceInput.toLowerCase())
+  ).slice(0, 10);
+
+  const handleNaceInput = (e) => {
+    setNaceInput(e.target.value);
+    setForm({ ...form, nace_code: '', faaliyet_tanimi: '', danger_class: '' });
+    setShowNaceList(true);
+  };
+  const handleNaceSelect = (nace) => {
+    setForm({ ...form, nace_code: nace.nace_kod, faaliyet_tanimi: nace.tanim, danger_class: nace.tehlike_sinifi });
+    setNaceInput(nace.nace_kod);
+    setShowNaceList(false);
+  };
+  const handleNaceBlur = () => {
+    setTimeout(() => setShowNaceList(false), 100);
   };
 
   const handleChange = (e) => {
@@ -100,6 +124,7 @@ const AddCompany = () => {
           tax_office: taxOfficeInput,
           tax_number: form.tax_number,
           nace_code: form.nace_code,
+          faaliyet_tanimi: form.faaliyet_tanimi,
           danger_class: form.danger_class,
           sgk_number: form.sgk_number,
           address: form.address,
@@ -152,7 +177,35 @@ const AddCompany = () => {
           )}
         </div>
         <input name="tax_number" value={form.tax_number} onChange={handleChange} placeholder="Vergi Numarası" className="w-full px-4 py-2 border rounded-lg" />
-        <input name="nace_code" value={form.nace_code} onChange={handleChange} placeholder="NACE Kodu" className="w-full px-4 py-2 border rounded-lg" />
+        {/* NACE autocomplete/select */}
+        <div className="relative">
+          <input
+            name="nace_code"
+            value={naceInput}
+            onChange={handleNaceInput}
+            onFocus={() => setShowNaceList(true)}
+            onBlur={handleNaceBlur}
+            required
+            placeholder="NACE Kodu veya Faaliyet"
+            className="w-full px-4 py-2 border rounded-lg"
+            autoComplete="off"
+          />
+          {showNaceList && filteredNace.length > 0 && (
+            <ul className="absolute z-10 left-0 right-0 bg-white border rounded-lg shadow max-h-48 overflow-auto mt-1">
+              {filteredNace.map((nace) => (
+                <li
+                  key={nace.nace_kod}
+                  className="px-4 py-2 hover:bg-blue-100 cursor-pointer"
+                  onMouseDown={() => handleNaceSelect(nace)}
+                >
+                  <span className="font-mono font-semibold">{nace.nace_kod}</span> - {nace.tanim}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        {/* Faaliyet Tanımı (readonly) */}
+        <input name="faaliyet_tanimi" value={form.faaliyet_tanimi} readOnly placeholder="Faaliyet Tanımı" className="w-full px-4 py-2 border rounded-lg bg-gray-100 text-gray-700" />
         {/* Tehlike Sınıfı seçimi */}
         <select name="danger_class" value={form.danger_class || ''} onChange={handleChange} required className="w-full px-4 py-2 border rounded-lg">
           <option value="">Tehlike Sınıfı Seçiniz</option>
