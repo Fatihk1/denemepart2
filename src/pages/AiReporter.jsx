@@ -51,6 +51,16 @@ const AiReporter = () => {
   const [reports, setReports] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [popupReport, setPopupReport] = useState(null);
+  const [showUpload, setShowUpload] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
+  const handleClosePopup = () => {
+    setPopupReport(null);
+    setShowUpload(false);
+    setSelectedImage(null);
+    setPreviewUrl(null);
+  };
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -115,9 +125,6 @@ const AiReporter = () => {
     if (!popupReport) return null;
     const isAI = AI_REPORTABLE.includes(popupReport.type) || (popupReport.type === 'Görev Atama Belgesi');
     const isRisk = popupReport.type === 'Risk Değerlendirme Raporu';
-    const [showUpload, setShowUpload] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [previewUrl, setPreviewUrl] = useState(null);
 
     // Görsel seçilince önizleme
     const handleImageChange = (e) => {
@@ -168,20 +175,20 @@ const AiReporter = () => {
                     </div>
                   )}
                   <button className="w-full py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition" onClick={() => alert('n8n entegrasyonu burada olacak')}>AI ile Tehlike Analizi Başlat</button>
-                  <button className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold mt-2" onClick={() => setPopupReport(null)}>Kapat</button>
+                  <button className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold mt-2" onClick={handleClosePopup}>Kapat</button>
                 </div>
               )}
               {!isRisk && (
                 <>
                   <button className="w-full py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition" onClick={() => alert('AI rapor oluşturma yakında!')}>AI Rapor Oluştur</button>
-                  <button className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold mt-2" onClick={() => setPopupReport(null)}>Kapat</button>
+                  <button className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold mt-2" onClick={handleClosePopup}>Kapat</button>
                 </>
               )}
             </>
           ) : (
             <>
               <div className="text-red-600 text-sm mb-2">Bu belge ilgili kurum ya da kuruluşlardan alınmalıdır.</div>
-              <button className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold" onClick={() => setPopupReport(null)}>Kapat</button>
+              <button className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold" onClick={handleClosePopup}>Kapat</button>
             </>
           )}
         </div>
