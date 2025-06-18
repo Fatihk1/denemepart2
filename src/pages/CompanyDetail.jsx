@@ -69,6 +69,7 @@ const CompanyDetail = () => {
       tax_office: form.tax_office,
       tax_number: form.tax_number,
       nace_code: form.nace_code,
+      faaliyet_tanimi: form.faaliyet_tanimi,
       sgk_number: form.sgk_number,
       address: form.address,
       city: form.city,
