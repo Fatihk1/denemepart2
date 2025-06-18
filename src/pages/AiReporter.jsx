@@ -54,12 +54,14 @@ const AiReporter = () => {
   const [showUpload, setShowUpload] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [selectedImages, setSelectedImages] = useState([]);
 
   const handleClosePopup = () => {
     setPopupReport(null);
     setShowUpload(false);
     setSelectedImage(null);
     setPreviewUrl(null);
+    setSelectedImages([]);
   };
 
   useEffect(() => {
@@ -126,22 +128,27 @@ const AiReporter = () => {
     const isAI = AI_REPORTABLE.includes(popupReport.type) || (popupReport.type === 'Görev Atama Belgesi');
     const isRisk = popupReport.type === 'Risk Değerlendirme Raporu';
 
-    // Görsel seçilince önizleme
+    // Görsel seçilince önizleme (çoklu)
     const handleImageChange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        setSelectedImage(file);
-        setPreviewUrl(URL.createObjectURL(file));
+      const files = Array.from(e.target.files);
+      if (files.length > 0) {
+        const newImages = files.map(file => ({ file, url: URL.createObjectURL(file) }));
+        setSelectedImages(prev => [...prev, ...newImages]);
       }
     };
 
-    // Kamera ile fotoğraf çekme (mobilde input accept="capture")
+    // Kamera ile fotoğraf çekme (çoklu)
     const handleTakePhoto = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        setSelectedImage(file);
-        setPreviewUrl(URL.createObjectURL(file));
+      const files = Array.from(e.target.files);
+      if (files.length > 0) {
+        const newImages = files.map(file => ({ file, url: URL.createObjectURL(file) }));
+        setSelectedImages(prev => [...prev, ...newImages]);
       }
+    };
+
+    // Fotoğraf silme
+    const handleRemoveImage = (url) => {
+      setSelectedImages(prev => prev.filter(img => img.url !== url));
     };
 
     return (
@@ -160,18 +167,25 @@ const AiReporter = () => {
                     <div className="flex gap-2">
                       <label className="flex-1 cursor-pointer bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-2 rounded-lg text-center">
                         Galeriden Yükle
-                        <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                        <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} />
                       </label>
                       <label className="flex-1 cursor-pointer bg-green-100 hover:bg-green-200 text-green-700 px-3 py-2 rounded-lg text-center">
                         Fotoğraf Çek
-                        <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleTakePhoto} />
+                        <input type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={handleTakePhoto} />
                       </label>
                     </div>
                   </div>
-                  {previewUrl && (
-                    <div className="flex flex-col items-center gap-2">
-                      <img src={previewUrl} alt="Önizleme" className="max-h-40 rounded-lg border" />
-                      <span className="text-xs text-gray-500">Seçilen görsel</span>
+                  {/* Seçilen fotoğraflar slider/kare */}
+                  {selectedImages.length > 0 && (
+                    <div className="flex gap-3 overflow-x-auto py-2">
+                      {selectedImages.map((img, idx) => (
+                        <div key={img.url} className="relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border border-gray-300 bg-gray-100 group">
+                          <img src={img.url} alt={`Seçilen ${idx+1}`} className="object-cover w-full h-full" />
+                          <button type="button" onClick={() => handleRemoveImage(img.url)} className="absolute -top-2 -right-2 bg-white/80 rounded-full p-1 shadow group-hover:scale-110 transition border border-gray-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-red-500"><path fillRule="evenodd" d="M10 8.586l4.95-4.95a1 1 0 111.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10l-4.95-4.95A1 1 0 115.05 3.636L10 8.586z" clipRule="evenodd" /></svg>
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                   <button className="w-full py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition" onClick={() => alert('n8n entegrasyonu burada olacak')}>AI ile Tehlike Analizi Başlat</button>
