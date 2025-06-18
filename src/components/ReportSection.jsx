@@ -47,6 +47,11 @@ const ReportSection = ({ companyId }) => {
         .select('*')
         .eq('company_id', companyId);
       setReports(data || []);
+      if (data) {
+        const checkedInit = {};
+        data.forEach(r => { checkedInit[r.id] = !!r.check_status; });
+        setChecked(checkedInit);
+      }
     };
     if (companyId) fetchReports();
   }, [companyId]);
@@ -55,8 +60,10 @@ const ReportSection = ({ companyId }) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleCheck = (id) => {
-    setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
+  const handleCheck = async (id) => {
+    const newValue = !checked[id];
+    setChecked((prev) => ({ ...prev, [id]: newValue }));
+    await supabase.from('reports').update({ check_status: newValue }).eq('id', id);
   };
 
   // Gruplama
