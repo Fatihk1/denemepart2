@@ -153,7 +153,17 @@ const AiReporter = () => {
 
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
-        <div className={`bg-white p-6 rounded-xl shadow-xl min-w-[320px] max-w-md w-full flex flex-col gap-4 transition-all duration-500 ${showUpload ? 'max-h-[90vh]' : ''}`} style={{ maxHeight: showUpload ? '90vh' : '320px' }}>
+        <div className={`bg-white p-6 rounded-xl shadow-xl min-w-[320px] max-w-md w-full flex flex-col gap-4 transition-all duration-500 ${showUpload ? 'max-h-[90vh]' : ''}`} style={{ maxHeight: showUpload ? '90vh' : '320px', position: 'relative' }}>
+          {/* Sağ üst köşe X butonu */}
+          <button
+            type="button"
+            onClick={handleClosePopup}
+            aria-label="Kapat"
+            className="absolute top-2 right-2 z-10 bg-white border border-gray-300 rounded-full p-1 shadow hover:bg-gray-100 transition w-8 h-8 flex items-center justify-center"
+            style={{lineHeight:0}}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-500"><path fillRule="evenodd" d="M10 8.586l4.95-4.95a1 1 0 111.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10l-4.95-4.95A1 1 0 115.05 3.636L10 8.586z" clipRule="evenodd" /></svg>
+          </button>
           <div className="text-lg font-bold mb-2">{popupReport.display || popupReport.type}</div>
           {isAI ? (
             <>
@@ -181,7 +191,7 @@ const AiReporter = () => {
                       {selectedImages.map((img, idx) => (
                         <div key={img.url} className="relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border border-gray-300 bg-gray-100 group">
                           <img src={img.url} alt={`Seçilen ${idx+1}`} className="object-cover w-full h-full" />
-                          <button type="button" onClick={() => handleRemoveImage(img.url)} className="absolute -top-2 -right-2 bg-white/80 rounded-full p-1 shadow group-hover:scale-110 transition border border-gray-300">
+                          <button type="button" onClick={() => handleRemoveImage(img.url)} className="absolute -top-3 -right-3 bg-white/90 rounded-full p-1.5 shadow-lg group-hover:scale-110 transition border border-gray-300 w-7 h-7 flex items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-red-500"><path fillRule="evenodd" d="M10 8.586l4.95-4.95a1 1 0 111.414 1.414L11.414 10l4.95 4.95a1 1 0 01-1.414 1.414L10 11.414l-4.95 4.95a1 1 0 01-1.414-1.414L8.586 10l-4.95-4.95A1 1 0 115.05 3.636L10 8.586z" clipRule="evenodd" /></svg>
                           </button>
                         </div>
