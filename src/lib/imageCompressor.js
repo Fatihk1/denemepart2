@@ -1,12 +1,12 @@
 /**
- * Görseli maksimum 1280px uzun kenar olacak şekilde yeniden boyutlandırır
+ * Görseli maksimum 512px uzun kenar olacak şekilde yeniden boyutlandırır
  * @param {File} file - Sıkıştırılacak görsel dosyası
- * @param {number} maxWidth - Maksimum genişlik (varsayılan: 1280)
- * @param {number} maxHeight - Maksimum yükseklik (varsayılan: 1280)
- * @param {number} quality - JPEG kalitesi 0-1 arası (varsayılan: 0.8)
+ * @param {number} maxWidth - Maksimum genişlik (varsayılan: 512)
+ * @param {number} maxHeight - Maksimum yükseklik (varsayılan: 512)
+ * @param {number} quality - JPEG kalitesi 0-1 arası (varsayılan: 0.6)
  * @returns {Promise<File>} Sıkıştırılmış görsel dosyası
  */
-export async function compressImage(file, maxWidth = 1280, maxHeight = 1280, quality = 0.8) {
+export async function compressImage(file, maxWidth = 512, maxHeight = 512, quality = 0.6) {
   return new Promise((resolve, reject) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -74,7 +74,7 @@ export async function compressImage(file, maxWidth = 1280, maxHeight = 1280, qua
  * @param {number} quality - JPEG kalitesi
  * @returns {Promise<File[]>} Sıkıştırılmış görsel dosyaları
  */
-export async function compressImages(files, maxWidth = 1280, maxHeight = 1280, quality = 0.8) {
+export async function compressImages(files, maxWidth = 512, maxHeight = 512, quality = 0.6) {
   const compressedFiles = [];
   
   for (const file of files) {

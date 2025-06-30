@@ -10,9 +10,9 @@ export async function sendRiskImagesToWebhook(selectedImages, selectedCompanyId)
   }
 
   try {
-    // Görselleri sıkıştır
+    // Görselleri sıkıştır - 512px uzun kenar, %60 kalite
     const files = selectedImages.map(img => img.file);
-    const compressedFiles = await compressImages(files, 1280, 1280, 0.8);
+    const compressedFiles = await compressImages(files, 512, 512, 0.6);
     
     const formData = new FormData();
     compressedFiles.forEach((file) => {
