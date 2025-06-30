@@ -56,6 +56,7 @@ const AiReporter = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedImages, setSelectedImages] = useState([]);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   const handleClosePopup = () => {
     setPopupReport(null);
@@ -199,7 +200,24 @@ const AiReporter = () => {
                       ))}
                     </div>
                   )}
-                  <button className="w-full py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition" onClick={() => sendRiskImagesToWebhook(selectedImages, selectedCompanyId)}>AI ile Tehlike Analizi Başlat</button>
+                  <button 
+                    className={`w-full py-2 text-white rounded-lg font-semibold transition ${
+                      isCompressing 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-indigo-600 hover:bg-indigo-700'
+                    }`} 
+                    onClick={handleStartAnalysis}
+                    disabled={isCompressing}
+                  >
+                    {isCompressing ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Görseller Sıkıştırılıyor...
+                      </div>
+                    ) : (
+                      'AI ile Tehlike Analizi Başlat'
+                    )}
+                  </button>
                   <button className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold mt-2" onClick={handleClosePopup}>Kapat</button>
                 </div>
               )}
@@ -219,6 +237,24 @@ const AiReporter = () => {
         </div>
       </div>
     );
+  };
+
+  // AI analiz başlatma fonksiyonu
+  const handleStartAnalysis = async () => {
+    if (selectedImages.length === 0) {
+      alert('Lütfen en az bir fotoğraf seçin.');
+      return;
+    }
+    
+    setIsCompressing(true);
+    try {
+      await sendRiskImagesToWebhook(selectedImages, selectedCompanyId);
+      handleClosePopup();
+    } catch (error) {
+      console.error('Analiz hatası:', error);
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   return (
