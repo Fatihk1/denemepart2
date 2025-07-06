@@ -66,6 +66,7 @@ const AiReporter = () => {
   const [showRemoveWarning, setShowRemoveWarning] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [initialRiskCount, setInitialRiskCount] = useState(0);
+  const [viewedRisks, setViewedRisks] = useState([]);
 
   const handleClosePopup = () => {
     setPopupReport(null);
@@ -259,16 +260,15 @@ const AiReporter = () => {
       const result = await sendRiskImagesToWebhook(selectedImages, selectedCompanyId);
       setIsCompressing(false);
       if (result) {
-        const risks = Array.isArray(result) && result[0]?.json ? result.map(item => item.json) : result;
+        const risks = Array.isArray(result) && result[0]?.json ? result.map(item => ({...item.json, durum: 'etkin'})) : result.map(r => ({...r, durum: 'etkin'}));
         setRiskResults(risks);
         setInitialRiskCount(risks.length);
         setCurrentRiskIndex(0);
-        setRemovedRisks([]);
         setEditedRisks([]);
         setEditMode(false);
         setEditRisk(null);
-        setShowRemoveWarning(false);
         setShowSummary(false);
+        setViewedRisks([0]);
         handleClosePopup();
       }
     } catch (error) {
@@ -277,25 +277,10 @@ const AiReporter = () => {
     }
   };
 
-  const handleRiskResolved = () => {
-    setShowRemoveWarning(true);
-  };
-
-  const confirmRemoveRisk = () => {
+  const handleRiskStatusToggle = () => {
     const updated = [...riskResults];
-    updated.splice(currentRiskIndex, 1);
+    updated[currentRiskIndex].durum = updated[currentRiskIndex].durum === 'etkin' ? 'giderildi' : 'etkin';
     setRiskResults(updated);
-    setShowRemoveWarning(false);
-    setRemovedRisks([...removedRisks, currentRiskIndex]);
-    if (updated.length === 0) {
-      setShowSummary(true);
-    } else if (currentRiskIndex >= updated.length) {
-      setCurrentRiskIndex(updated.length - 1);
-    }
-  };
-
-  const cancelRemoveRisk = () => {
-    setShowRemoveWarning(false);
   };
 
   const handleEdit = () => {
@@ -310,36 +295,44 @@ const AiReporter = () => {
   const saveEdit = () => {
     const updated = [...riskResults];
     updated[currentRiskIndex] = editRisk;
-    setRiskResults(updated);
     if (!editedRisks.includes(currentRiskIndex)) {
       setEditedRisks([...editedRisks, currentRiskIndex]);
     }
+    setRiskResults(updated);
     setEditMode(false);
     setEditRisk(null);
   };
 
   const goToNextRisk = () => {
+    if (!viewedRisks.includes(currentRiskIndex)) {
+      setViewedRisks([...viewedRisks, currentRiskIndex]);
+    }
     if (currentRiskIndex < riskResults.length - 1) {
       setCurrentRiskIndex(currentRiskIndex + 1);
+      if (!viewedRisks.includes(currentRiskIndex + 1)) {
+        setViewedRisks([...viewedRisks, currentRiskIndex + 1]);
+      }
       setEditMode(false);
       setEditRisk(null);
-    } else {
-      setShowSummary(true);
     }
   };
 
   const goToPrevRisk = () => {
     if (currentRiskIndex > 0) {
       setCurrentRiskIndex(currentRiskIndex - 1);
+      if (!viewedRisks.includes(currentRiskIndex - 1)) {
+        setViewedRisks([...viewedRisks, currentRiskIndex - 1]);
+      }
       setEditMode(false);
       setEditRisk(null);
     }
   };
 
-  const risksToSave = riskResults;
-  const removedCount = initialRiskCount - riskResults.length;
+  const allViewed = viewedRisks.length === riskResults.length;
+  const risksToSave = riskResults.filter(r => r.durum === 'etkin');
+  const removedCount = riskResults.filter(r => r.durum === 'giderildi').length;
   const editedCount = editedRisks.length;
-  const approvedCount = riskResults.length;
+  const approvedCount = risksToSave.length;
 
   const handleSaveReport = async () => {
     if (!selectedCompanyId || !riskResults) {
@@ -423,70 +416,55 @@ const AiReporter = () => {
       {renderPopup()}
       {riskResults.length > 0 && !showSummary && currentRiskIndex < riskResults.length && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
-          <div className="bg-white p-6 rounded-xl shadow-xl min-w-[340px] max-w-lg w-full flex flex-col gap-4 relative">
-            <div className="absolute top-2 right-4 text-sm text-gray-500">{currentRiskIndex + 1}/{initialRiskCount}</div>
-            <div className="text-lg font-bold mb-2">Risk Analiz Sonucu</div>
-            <div className="flex items-center justify-between mb-2">
+          <div className="bg-white p-6 rounded-xl shadow-xl min-w-[400px] max-w-lg w-full flex flex-col gap-4 relative">
+            <div className="absolute top-2 left-4 text-sm text-gray-500">{'<'} {currentRiskIndex + 1}/{initialRiskCount} {'>'}</div>
+            <div className="text-lg font-bold mb-2 text-center">Risk Analiz Sonucu</div>
+            <div className="border-t border-b py-2 mb-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="font-semibold">Tehlike Kaynağı:</div>
+                <div>{editMode ? <input className="border rounded p-1 w-full" value={editRisk.tehlike_kaynagi} onChange={e => handleEditChange('tehlike_kaynagi', e.target.value)} /> : riskResults[currentRiskIndex].tehlike_kaynagi}</div>
+                <div className="font-semibold">Tehlike:</div>
+                <div>{editMode ? <input className="border rounded p-1 w-full" value={editRisk.tehlike} onChange={e => handleEditChange('tehlike', e.target.value)} /> : riskResults[currentRiskIndex].tehlike}</div>
+                <div className="font-semibold">Risk:</div>
+                <div>{editMode ? <input className="border rounded p-1 w-full" value={editRisk.risk} onChange={e => handleEditChange('risk', e.target.value)} /> : riskResults[currentRiskIndex].risk}</div>
+                <div className="font-semibold">Olasılık:</div>
+                <div>{editMode ? <select className="border rounded p-1 w-full" value={editRisk.olasilik} onChange={e => handleEditChange('olasilik', e.target.value)}>{[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}</select> : riskResults[currentRiskIndex].olasilik}</div>
+                <div className="font-semibold">Etki:</div>
+                <div>{editMode ? <select className="border rounded p-1 w-full" value={editRisk.etki} onChange={e => handleEditChange('etki', e.target.value)}>{[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}</select> : riskResults[currentRiskIndex].etki}</div>
+                <div className="font-semibold">Risk Puanı:</div>
+                <div>{editMode ? <input className="border rounded p-1 w-full bg-gray-100" value={editRisk.risk_puani} readOnly /> : riskResults[currentRiskIndex].risk_puani}</div>
+                <div className="font-semibold">Azaltıcı Önlem:</div>
+                <div>{editMode ? <input className="border rounded p-1 w-full" value={editRisk.azaltici_onleyici_faaliyet} onChange={e => handleEditChange('azaltici_onleyici_faaliyet', e.target.value)} /> : riskResults[currentRiskIndex].azaltici_onleyici_faaliyet}</div>
+                <div className="font-semibold">Durum:</div>
+                <div className={riskResults[currentRiskIndex].durum === 'giderildi' ? 'text-red-600 font-bold' : 'text-green-700 font-bold'}>{riskResults[currentRiskIndex].durum === 'giderildi' ? 'Giderildi' : 'Etkin'}</div>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-2">
+              <button className={`flex-1 py-2 rounded-lg font-semibold ${riskResults[currentRiskIndex].durum === 'giderildi' ? 'bg-gray-400 text-white' : 'bg-red-600 text-white'}`} onClick={handleRiskStatusToggle}>
+                {riskResults[currentRiskIndex].durum === 'giderildi' ? 'Etkinleştir' : 'Risk Giderildi'}
+              </button>
+              <button className="flex-1 py-2 bg-yellow-500 text-white rounded-lg font-semibold" onClick={editMode ? saveEdit : handleEdit}>{editMode ? 'Kaydet' : 'Düzenle'}</button>
+              <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-semibold" onClick={goToNextRisk} disabled={currentRiskIndex === riskResults.length - 1}>Onayla</button>
+            </div>
+            <div className="flex justify-between mt-2">
               {currentRiskIndex > 0 && (
                 <button className="p-2 text-xl" onClick={goToPrevRisk}>&larr;</button>
               )}
-              <div className="flex-1 text-center"></div>
               {currentRiskIndex < riskResults.length - 1 && (
                 <button className="p-2 text-xl" onClick={goToNextRisk}>&rarr;</button>
               )}
             </div>
-            {editMode ? (
-              <>
-                <label className="font-semibold">Tehlike Kaynağı</label>
-                <input className="border rounded p-1 mb-1" value={editRisk.tehlike_kaynagi} onChange={e => handleEditChange('tehlike_kaynagi', e.target.value)} />
-                <label className="font-semibold">Tehlike</label>
-                <input className="border rounded p-1 mb-1" value={editRisk.tehlike} onChange={e => handleEditChange('tehlike', e.target.value)} />
-                <label className="font-semibold">Risk</label>
-                <input className="border rounded p-1 mb-1" value={editRisk.risk} onChange={e => handleEditChange('risk', e.target.value)} />
-                <label className="font-semibold">Olasılık</label>
-                <select className="border rounded p-1 mb-1" value={editRisk.olasilik} onChange={e => handleEditChange('olasilik', e.target.value)}>
-                  {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
-                </select>
-                <label className="font-semibold">Etki</label>
-                <select className="border rounded p-1 mb-1" value={editRisk.etki} onChange={e => handleEditChange('etki', e.target.value)}>
-                  {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
-                </select>
-                <label className="font-semibold">Risk Puanı</label>
-                <input className="border rounded p-1 mb-1 bg-gray-100" value={editRisk.risk_puani} readOnly />
-                <label className="font-semibold">Azaltıcı/Önleyici Faaliyet</label>
-                <input className="border rounded p-1 mb-1" value={editRisk.azaltici_onleyici_faaliyet} onChange={e => handleEditChange('azaltici_onleyici_faaliyet', e.target.value)} />
-                <div className="flex gap-2 mt-2">
-                  <button className="flex-1 py-2 bg-green-600 text-white rounded-lg font-semibold" onClick={saveEdit}>Kaydet</button>
-                  <button className="flex-1 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold" onClick={() => { setEditMode(false); setEditRisk(null); }}>Vazgeç</button>
+            <div className="mt-4 w-full">
+              {allViewed ? (
+                <button className="w-full py-2 bg-green-600 text-white rounded-lg font-semibold" onClick={() => setShowSummary(true)}>
+                  {approvedCount} Risk ile Rapor Oluştur
+                </button>
+              ) : (
+                <div className="w-full py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold text-center">
+                  Raporu oluşturmak için tüm riskleri görüntülemeniz gerekmektedir.
                 </div>
-              </>
-            ) : (
-              <>
-                <div><b>Tehlike Kaynağı:</b> {riskResults[currentRiskIndex].tehlike_kaynagi}</div>
-                <div><b>Tehlike:</b> {riskResults[currentRiskIndex].tehlike}</div>
-                <div><b>Risk:</b> {riskResults[currentRiskIndex].risk}</div>
-                <div><b>Olasılık:</b> {riskResults[currentRiskIndex].olasilik}</div>
-                <div><b>Etki:</b> {riskResults[currentRiskIndex].etki}</div>
-                <div><b>Risk Puanı:</b> {riskResults[currentRiskIndex].risk_puani}</div>
-                <div><b>Azaltıcı/Önleyici Faaliyet:</b> {riskResults[currentRiskIndex].azaltici_onleyici_faaliyet}</div>
-              </>
-            )}
-            <div className="flex gap-2 mt-4">
-              <button className="flex-1 py-2 bg-red-600 text-white rounded-lg font-semibold" onClick={handleRiskResolved}>Risk Giderildi</button>
-              <button className="flex-1 py-2 bg-yellow-500 text-white rounded-lg font-semibold" onClick={handleEdit}>Düzenle</button>
-              <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-semibold" onClick={goToNextRisk} disabled={currentRiskIndex === riskResults.length - 1}>Devam</button>
+              )}
             </div>
-            {showRemoveWarning && (
-              <div className="fixed inset-0 flex items-center justify-center z-60 bg-black/60">
-                <div className="bg-white p-6 rounded-xl shadow-xl max-w-xs w-full flex flex-col gap-4">
-                  <div className="text-red-600 font-bold">Bu riskin giderildiğini belirttiniz, rapora eklenmeyecek. Emin misiniz?</div>
-                  <div className="flex gap-2">
-                    <button className="flex-1 py-2 bg-red-600 text-white rounded-lg font-semibold" onClick={confirmRemoveRisk}>Evet</button>
-                    <button className="flex-1 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold" onClick={cancelRemoveRisk}>Hayır</button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
