@@ -29,11 +29,14 @@ export async function sendRiskImagesToWebhook(selectedImages, selectedCompanyId)
     });
     
     if (response.ok) {
-      alert('Fotoğraflar başarıyla gönderildi!');
+      const data = await response.json();
+      return data;
     } else {
       alert('Gönderim sırasında hata oluştu.');
+      return null;
     }
   } catch (err) {
     alert('Bir hata oluştu: ' + err.message);
+    return null;
   }
 } 

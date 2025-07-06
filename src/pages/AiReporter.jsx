@@ -57,6 +57,7 @@ const AiReporter = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedImages, setSelectedImages] = useState([]);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [riskResults, setRiskResults] = useState(null);
 
   const handleClosePopup = () => {
     setPopupReport(null);
@@ -245,15 +246,37 @@ const AiReporter = () => {
       alert('Lütfen en az bir fotoğraf seçin.');
       return;
     }
-    
     setIsCompressing(true);
     try {
-      await sendRiskImagesToWebhook(selectedImages, selectedCompanyId);
-      handleClosePopup();
-    } catch (error) {
-      console.error('Analiz hatası:', error);
-    } finally {
+      const result = await sendRiskImagesToWebhook(selectedImages, selectedCompanyId);
       setIsCompressing(false);
+      if (result) {
+        setRiskResults(result);
+        handleClosePopup();
+      }
+    } catch (error) {
+      setIsCompressing(false);
+      console.error('Analiz hatası:', error);
+    }
+  };
+
+  const handleSaveReport = async () => {
+    if (!selectedCompanyId || !riskResults) {
+      alert("Firma ve risk verisi eksik!");
+      return;
+    }
+    const { error } = await supabase.from('risk_reports').insert([
+      {
+        company_id: selectedCompanyId,
+        risk_json: riskResults,
+        // İstersen report_json, title, description gibi alanları da ekleyebilirsin
+      }
+    ]);
+    if (error) {
+      alert("Kayıt sırasında hata oluştu: " + error.message);
+    } else {
+      alert("Risk raporu başarıyla kaydedildi!");
+      setRiskResults(null); // İstersen ekrandan kaldırabilirsin
     }
   };
 
@@ -317,6 +340,32 @@ const AiReporter = () => {
         )}
       </div>
       {renderPopup()}
+      {riskResults && (
+        <div className="w-full max-w-2xl mx-auto mt-8">
+          <h2 className="text-xl font-bold mb-4">Risk Analiz Sonuçları</h2>
+          {riskResults.length === 0 ? (
+            <div>Hiç risk bulunamadı.</div>
+          ) : (
+            riskResults.map((risk, idx) => (
+              <div key={idx} className="bg-white rounded-xl shadow p-4 mb-4 flex flex-col gap-2">
+                <div><b>Tehlike Kaynağı:</b> {risk.tehlike_kaynagi}</div>
+                <div><b>Tehlike:</b> {risk.tehlike}</div>
+                <div><b>Risk:</b> {risk.risk}</div>
+                <div><b>Olasılık:</b> {risk.olasilik}</div>
+                <div><b>Etki:</b> {risk.etki}</div>
+                <div><b>Risk Puanı:</b> {risk.risk_puani}</div>
+                <div><b>Azaltıcı/Önleyici Faaliyet:</b> {risk.azaltici_onleyici_faaliyet}</div>
+              </div>
+            ))
+          )}
+          <button
+            className="w-full py-2 bg-green-600 text-white rounded-lg font-semibold mt-4"
+            onClick={handleSaveReport}
+          >
+            Raporu Kaydet
+          </button>
+        </div>
+      )}
     </div>
   );
 };
