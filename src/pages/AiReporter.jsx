@@ -57,7 +57,12 @@ const AiReporter = () => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedImages, setSelectedImages] = useState([]);
   const [isCompressing, setIsCompressing] = useState(false);
-  const [riskResults, setRiskResults] = useState(null);
+  const [riskResults, setRiskResults] = useState([]);
+  const [currentRiskIndex, setCurrentRiskIndex] = useState(0);
+  const [removedRisks, setRemovedRisks] = useState([]);
+  const [editMode, setEditMode] = useState(false);
+  const [editRisk, setEditRisk] = useState(null);
+  const [showRemoveWarning, setShowRemoveWarning] = useState(false);
 
   const handleClosePopup = () => {
     setPopupReport(null);
@@ -251,7 +256,14 @@ const AiReporter = () => {
       const result = await sendRiskImagesToWebhook(selectedImages, selectedCompanyId);
       setIsCompressing(false);
       if (result) {
-        setRiskResults(result);
+        // Eğer result [{json: {...}}, ...] ise:
+        const risks = Array.isArray(result) && result[0]?.json ? result.map(item => item.json) : result;
+        setRiskResults(risks);
+        setCurrentRiskIndex(0);
+        setRemovedRisks([]);
+        setEditMode(false);
+        setEditRisk(null);
+        setShowRemoveWarning(false);
         handleClosePopup();
       }
     } catch (error) {
@@ -259,6 +271,50 @@ const AiReporter = () => {
       console.error('Analiz hatası:', error);
     }
   };
+
+  const handleRiskResolved = () => {
+    setShowRemoveWarning(true);
+  };
+
+  const confirmRemoveRisk = () => {
+    setRemovedRisks([...removedRisks, currentRiskIndex]);
+    setShowRemoveWarning(false);
+    goToNextRisk();
+  };
+
+  const cancelRemoveRisk = () => {
+    setShowRemoveWarning(false);
+  };
+
+  const handleEdit = () => {
+    setEditMode(true);
+    setEditRisk({ ...riskResults[currentRiskIndex] });
+  };
+
+  const handleEditChange = (field, value) => {
+    setEditRisk(prev => ({ ...prev, [field]: value, risk_puani: field === 'etki' || field === 'olasilik' ? (parseInt(field === 'etki' ? value : prev.etki) * parseInt(field === 'olasilik' ? value : prev.olasilik)) : prev.risk_puani }));
+  };
+
+  const saveEdit = () => {
+    const updated = [...riskResults];
+    updated[currentRiskIndex] = editRisk;
+    setRiskResults(updated);
+    setEditMode(false);
+    setEditRisk(null);
+  };
+
+  const goToNextRisk = () => {
+    if (currentRiskIndex < riskResults.length - 1) {
+      setCurrentRiskIndex(currentRiskIndex + 1);
+      setEditMode(false);
+      setEditRisk(null);
+    } else {
+      // Tüm riskler bitti, kalanları kaydet
+      // İstersen burada otomatik kaydetme veya onay ekranı açabilirsin
+    }
+  };
+
+  const risksToSave = riskResults.filter((_, idx) => !removedRisks.includes(idx));
 
   const handleSaveReport = async () => {
     if (!selectedCompanyId || !riskResults) {
@@ -340,6 +396,66 @@ const AiReporter = () => {
         )}
       </div>
       {renderPopup()}
+      {riskResults.length > 0 && currentRiskIndex < riskResults.length && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
+          <div className="bg-white p-6 rounded-xl shadow-xl min-w-[320px] max-w-md w-full flex flex-col gap-4 relative">
+            <div className="absolute top-2 right-4 text-sm text-gray-500">{currentRiskIndex + 1}/{riskResults.length}</div>
+            <div className="text-lg font-bold mb-2">Risk Analiz Sonucu</div>
+            {editMode ? (
+              <>
+                <label className="font-semibold">Tehlike Kaynağı</label>
+                <input className="border rounded p-1 mb-1" value={editRisk.tehlike_kaynagi} onChange={e => handleEditChange('tehlike_kaynagi', e.target.value)} />
+                <label className="font-semibold">Tehlike</label>
+                <input className="border rounded p-1 mb-1" value={editRisk.tehlike} onChange={e => handleEditChange('tehlike', e.target.value)} />
+                <label className="font-semibold">Risk</label>
+                <input className="border rounded p-1 mb-1" value={editRisk.risk} onChange={e => handleEditChange('risk', e.target.value)} />
+                <label className="font-semibold">Olasılık</label>
+                <select className="border rounded p-1 mb-1" value={editRisk.olasilik} onChange={e => handleEditChange('olasilik', e.target.value)}>
+                  {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+                <label className="font-semibold">Etki</label>
+                <select className="border rounded p-1 mb-1" value={editRisk.etki} onChange={e => handleEditChange('etki', e.target.value)}>
+                  {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+                <label className="font-semibold">Risk Puanı</label>
+                <input className="border rounded p-1 mb-1 bg-gray-100" value={editRisk.risk_puani} readOnly />
+                <label className="font-semibold">Azaltıcı/Önleyici Faaliyet</label>
+                <input className="border rounded p-1 mb-1" value={editRisk.azaltici_onleyici_faaliyet} onChange={e => handleEditChange('azaltici_onleyici_faaliyet', e.target.value)} />
+                <div className="flex gap-2 mt-2">
+                  <button className="flex-1 py-2 bg-green-600 text-white rounded-lg font-semibold" onClick={saveEdit}>Kaydet</button>
+                  <button className="flex-1 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold" onClick={() => { setEditMode(false); setEditRisk(null); }}>Vazgeç</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div><b>Tehlike Kaynağı:</b> {riskResults[currentRiskIndex].tehlike_kaynagi}</div>
+                <div><b>Tehlike:</b> {riskResults[currentRiskIndex].tehlike}</div>
+                <div><b>Risk:</b> {riskResults[currentRiskIndex].risk}</div>
+                <div><b>Olasılık:</b> {riskResults[currentRiskIndex].olasilik}</div>
+                <div><b>Etki:</b> {riskResults[currentRiskIndex].etki}</div>
+                <div><b>Risk Puanı:</b> {riskResults[currentRiskIndex].risk_puani}</div>
+                <div><b>Azaltıcı/Önleyici Faaliyet:</b> {riskResults[currentRiskIndex].azaltici_onleyici_faaliyet}</div>
+              </>
+            )}
+            <div className="flex gap-2 mt-4">
+              <button className="flex-1 py-2 bg-red-600 text-white rounded-lg font-semibold" onClick={handleRiskResolved}>Risk Giderildi</button>
+              <button className="flex-1 py-2 bg-yellow-500 text-white rounded-lg font-semibold" onClick={handleEdit}>Düzenle</button>
+              <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-semibold" onClick={goToNextRisk}>Devam</button>
+            </div>
+            {showRemoveWarning && (
+              <div className="fixed inset-0 flex items-center justify-center z-60 bg-black/60">
+                <div className="bg-white p-6 rounded-xl shadow-xl max-w-xs w-full flex flex-col gap-4">
+                  <div className="text-red-600 font-bold">Bu riskin giderildiğini belirttiniz, rapora eklenmeyecek. Emin misiniz?</div>
+                  <div className="flex gap-2">
+                    <button className="flex-1 py-2 bg-red-600 text-white rounded-lg font-semibold" onClick={confirmRemoveRisk}>Evet</button>
+                    <button className="flex-1 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold" onClick={cancelRemoveRisk}>Hayır</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {riskResults && (
         <div className="w-full max-w-2xl mx-auto mt-8">
           <h2 className="text-xl font-bold mb-4">Risk Analiz Sonuçları</h2>
