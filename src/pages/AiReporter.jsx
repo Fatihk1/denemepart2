@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { sendRiskImagesToWebhook } from '../lib/aiReportApi';
+import html2pdf from 'html2pdf.js';
+import riskReportTemplate from '../templates/riskReport.html?raw';
 
 const GROUPS = [
   {
@@ -349,9 +351,79 @@ const AiReporter = () => {
     if (error) {
       alert("Kayıt sırasında hata oluştu: " + error.message);
     } else {
-      alert("Risk raporu başarıyla kaydedildi!");
-      setRiskResults(null); // İstersen ekrandan kaldırabilirsin
+      alert("AI raporu başarıyla kaydedildi!");
+      setRiskResults([]); // null değil, boş dizi!
+      setShowSummary(false);
     }
+  };
+
+  // HTML şablonunu doldurma fonksiyonu
+  function fillTemplate(template, data) {
+    // Ekip tablosu
+    const ekipTablosu = data.ekip.map(e =>
+      `<tr>
+        <td style="border:1px solid #aaa; padding:6px;">${e.ad}</td>
+        <td style="border:1px solid #aaa; padding:6px;">${e.gorev}</td>
+        <td style="border:1px solid #aaa; padding:6px;">${e.belge}</td>
+      </tr>`
+    ).join('');
+    // Risk tablosu
+    const riskTablosu = data.riskler.map(r =>
+      `<tr>
+        <td style="border:1px solid #aaa; padding:6px;">${r.tehlike_kaynagi}</td>
+        <td style="border:1px solid #aaa; padding:6px;">${r.tehlike}</td>
+        <td style="border:1px solid #aaa; padding:6px;">${r.risk}</td>
+        <td style="border:1px solid #aaa; padding:6px;">${r.olasilik}</td>
+        <td style="border:1px solid #aaa; padding:6px;">${r.etki}</td>
+        <td style="border:1px solid #aaa; padding:6px;">${r.risk_puani}</td>
+        <td style="border:1px solid #aaa; padding:6px;">${r.azaltici_onleyici_faaliyet}</td>
+        <td style="border:1px solid #aaa; padding:6px;">${r.durum}</td>
+      </tr>`
+    ).join('');
+    // İmza alanı
+    const ekipImza = data.ekip.map(e => e.ad).concat(['', '', '']).slice(0, 3);
+    return template
+      .replace('{{isyeri_adi}}', data.isyeri_adi)
+      .replace('{{adres}}', data.adres)
+      .replace('{{faaliyet_konusu}}', data.faaliyet_konusu)
+      .replace('{{nace_kodu}}', data.nace_kodu)
+      .replace('{{calisan_sayisi}}', data.calisan_sayisi)
+      .replace('{{rapor_tarihi}}', data.rapor_tarihi)
+      .replace('{{ekip_tablosu}}', ekipTablosu)
+      .replace('{{risk_tablosu}}', riskTablosu)
+      .replace('{{ekip_1}}', ekipImza[0])
+      .replace('{{ekip_2}}', ekipImza[1])
+      .replace('{{ekip_3}}', ekipImza[2]);
+  }
+
+  function downloadPdfFromHtml(htmlString) {
+    const element = document.createElement('div');
+    element.innerHTML = htmlString;
+    html2pdf()
+      .set({ margin: 10, filename: 'risk-analiz-raporu.pdf', html2canvas: { scale: 2 } })
+      .from(element)
+      .save();
+  }
+
+  // Raporu Oluştur butonunda kullanılacak fonksiyon
+  const handleDownloadReport = () => {
+    if (!selectedCompany || !riskResults) {
+      alert('Firma ve risk verisi eksik!');
+      return;
+    }
+    // Sadece o anki riskResults ile çalış
+    const data = {
+      isyeri_adi: selectedCompany.company_name,
+      adres: selectedCompany.address,
+      faaliyet_konusu: selectedCompany.activity,
+      nace_kodu: selectedCompany.nace_code,
+      calisan_sayisi: selectedCompany.employee_count,
+      rapor_tarihi: new Date().toLocaleDateString('tr-TR'),
+      ekip: selectedCompany.team || [], // örnek: [{ad: '...', gorev: '...', belge: '...'}]
+      riskler: riskResults
+    };
+    const html = fillTemplate(riskReportTemplate, data);
+    downloadPdfFromHtml(html);
   };
 
   return (
@@ -414,7 +486,7 @@ const AiReporter = () => {
         )}
       </div>
       {renderPopup()}
-      {riskResults.length > 0 && !showSummary && currentRiskIndex < riskResults.length && (
+      {Array.isArray(riskResults) && riskResults.length > 0 && !showSummary && currentRiskIndex < riskResults.length && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
           <div className="bg-white p-6 rounded-xl shadow-xl min-w-[400px] max-w-lg w-full flex flex-col gap-4 relative">
             <div className="absolute top-2 left-4 text-sm text-gray-500">{'<'} {currentRiskIndex + 1}/{initialRiskCount} {'>'}</div>
@@ -477,7 +549,8 @@ const AiReporter = () => {
             <div>Düzenlenen risk sayısı: {editedCount}</div>
             <div>Onaylanan risk sayısı: {approvedCount}</div>
             <div className="mt-2 font-semibold">Onaylanan ve Düzenlenen Toplam {approvedCount} Risk ile Risk Analiz Raporunuz Oluşturulacaktır.</div>
-            <button className="w-full py-2 bg-green-600 text-white rounded-lg font-semibold mt-4" onClick={handleSaveReport}>Raporu Oluştur</button>
+            <button className="w-full py-2 bg-green-600 text-white rounded-lg font-semibold mt-4" onClick={handleSaveReport}>Raporu Supabase'ye Kaydet</button>
+            <button className="w-full py-2 bg-blue-600 text-white rounded-lg font-semibold mt-2" onClick={handleDownloadReport}>PDF Olarak İndir</button>
           </div>
         </div>
       )}
