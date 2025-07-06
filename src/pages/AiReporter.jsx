@@ -60,9 +60,12 @@ const AiReporter = () => {
   const [riskResults, setRiskResults] = useState([]);
   const [currentRiskIndex, setCurrentRiskIndex] = useState(0);
   const [removedRisks, setRemovedRisks] = useState([]);
+  const [editedRisks, setEditedRisks] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [editRisk, setEditRisk] = useState(null);
   const [showRemoveWarning, setShowRemoveWarning] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+  const [initialRiskCount, setInitialRiskCount] = useState(0);
 
   const handleClosePopup = () => {
     setPopupReport(null);
@@ -256,14 +259,16 @@ const AiReporter = () => {
       const result = await sendRiskImagesToWebhook(selectedImages, selectedCompanyId);
       setIsCompressing(false);
       if (result) {
-        // Eğer result [{json: {...}}, ...] ise:
         const risks = Array.isArray(result) && result[0]?.json ? result.map(item => item.json) : result;
         setRiskResults(risks);
+        setInitialRiskCount(risks.length);
         setCurrentRiskIndex(0);
         setRemovedRisks([]);
+        setEditedRisks([]);
         setEditMode(false);
         setEditRisk(null);
         setShowRemoveWarning(false);
+        setShowSummary(false);
         handleClosePopup();
       }
     } catch (error) {
@@ -277,9 +282,16 @@ const AiReporter = () => {
   };
 
   const confirmRemoveRisk = () => {
-    setRemovedRisks([...removedRisks, currentRiskIndex]);
+    const updated = [...riskResults];
+    updated.splice(currentRiskIndex, 1);
+    setRiskResults(updated);
     setShowRemoveWarning(false);
-    goToNextRisk();
+    setRemovedRisks([...removedRisks, currentRiskIndex]);
+    if (updated.length === 0) {
+      setShowSummary(true);
+    } else if (currentRiskIndex >= updated.length) {
+      setCurrentRiskIndex(updated.length - 1);
+    }
   };
 
   const cancelRemoveRisk = () => {
@@ -299,6 +311,9 @@ const AiReporter = () => {
     const updated = [...riskResults];
     updated[currentRiskIndex] = editRisk;
     setRiskResults(updated);
+    if (!editedRisks.includes(currentRiskIndex)) {
+      setEditedRisks([...editedRisks, currentRiskIndex]);
+    }
     setEditMode(false);
     setEditRisk(null);
   };
@@ -309,12 +324,22 @@ const AiReporter = () => {
       setEditMode(false);
       setEditRisk(null);
     } else {
-      // Tüm riskler bitti, kalanları kaydet
-      // İstersen burada otomatik kaydetme veya onay ekranı açabilirsin
+      setShowSummary(true);
     }
   };
 
-  const risksToSave = riskResults.filter((_, idx) => !removedRisks.includes(idx));
+  const goToPrevRisk = () => {
+    if (currentRiskIndex > 0) {
+      setCurrentRiskIndex(currentRiskIndex - 1);
+      setEditMode(false);
+      setEditRisk(null);
+    }
+  };
+
+  const risksToSave = riskResults;
+  const removedCount = initialRiskCount - riskResults.length;
+  const editedCount = editedRisks.length;
+  const approvedCount = riskResults.length;
 
   const handleSaveReport = async () => {
     if (!selectedCompanyId || !riskResults) {
@@ -396,11 +421,20 @@ const AiReporter = () => {
         )}
       </div>
       {renderPopup()}
-      {riskResults.length > 0 && currentRiskIndex < riskResults.length && (
+      {riskResults.length > 0 && !showSummary && currentRiskIndex < riskResults.length && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
-          <div className="bg-white p-6 rounded-xl shadow-xl min-w-[320px] max-w-md w-full flex flex-col gap-4 relative">
-            <div className="absolute top-2 right-4 text-sm text-gray-500">{currentRiskIndex + 1}/{riskResults.length}</div>
+          <div className="bg-white p-6 rounded-xl shadow-xl min-w-[340px] max-w-lg w-full flex flex-col gap-4 relative">
+            <div className="absolute top-2 right-4 text-sm text-gray-500">{currentRiskIndex + 1}/{initialRiskCount}</div>
             <div className="text-lg font-bold mb-2">Risk Analiz Sonucu</div>
+            <div className="flex items-center justify-between mb-2">
+              {currentRiskIndex > 0 && (
+                <button className="p-2 text-xl" onClick={goToPrevRisk}>&larr;</button>
+              )}
+              <div className="flex-1 text-center"></div>
+              {currentRiskIndex < riskResults.length - 1 && (
+                <button className="p-2 text-xl" onClick={goToNextRisk}>&rarr;</button>
+              )}
+            </div>
             {editMode ? (
               <>
                 <label className="font-semibold">Tehlike Kaynağı</label>
@@ -440,7 +474,7 @@ const AiReporter = () => {
             <div className="flex gap-2 mt-4">
               <button className="flex-1 py-2 bg-red-600 text-white rounded-lg font-semibold" onClick={handleRiskResolved}>Risk Giderildi</button>
               <button className="flex-1 py-2 bg-yellow-500 text-white rounded-lg font-semibold" onClick={handleEdit}>Düzenle</button>
-              <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-semibold" onClick={goToNextRisk}>Devam</button>
+              <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-semibold" onClick={goToNextRisk} disabled={currentRiskIndex === riskResults.length - 1}>Devam</button>
             </div>
             {showRemoveWarning && (
               <div className="fixed inset-0 flex items-center justify-center z-60 bg-black/60">
@@ -456,30 +490,17 @@ const AiReporter = () => {
           </div>
         </div>
       )}
-      {riskResults && (
-        <div className="w-full max-w-2xl mx-auto mt-8">
-          <h2 className="text-xl font-bold mb-4">Risk Analiz Sonuçları</h2>
-          {riskResults.length === 0 ? (
-            <div>Hiç risk bulunamadı.</div>
-          ) : (
-            riskResults.map((risk, idx) => (
-              <div key={idx} className="bg-white rounded-xl shadow p-4 mb-4 flex flex-col gap-2">
-                <div><b>Tehlike Kaynağı:</b> {risk.tehlike_kaynagi}</div>
-                <div><b>Tehlike:</b> {risk.tehlike}</div>
-                <div><b>Risk:</b> {risk.risk}</div>
-                <div><b>Olasılık:</b> {risk.olasilik}</div>
-                <div><b>Etki:</b> {risk.etki}</div>
-                <div><b>Risk Puanı:</b> {risk.risk_puani}</div>
-                <div><b>Azaltıcı/Önleyici Faaliyet:</b> {risk.azaltici_onleyici_faaliyet}</div>
-              </div>
-            ))
-          )}
-          <button
-            className="w-full py-2 bg-green-600 text-white rounded-lg font-semibold mt-4"
-            onClick={handleSaveReport}
-          >
-            Raporu Kaydet
-          </button>
+      {showSummary && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
+          <div className="bg-white p-6 rounded-xl shadow-xl min-w-[340px] max-w-lg w-full flex flex-col gap-4 relative">
+            <div className="text-lg font-bold mb-2">Risk Analiz Raporu Özeti</div>
+            <div>Tespit edilen risk sayısı: {initialRiskCount}</div>
+            <div>Kaldırılan risk sayısı: {removedCount}</div>
+            <div>Düzenlenen risk sayısı: {editedCount}</div>
+            <div>Onaylanan risk sayısı: {approvedCount}</div>
+            <div className="mt-2 font-semibold">Onaylanan ve Düzenlenen Toplam {approvedCount} Risk ile Risk Analiz Raporunuz Oluşturulacaktır.</div>
+            <button className="w-full py-2 bg-green-600 text-white rounded-lg font-semibold mt-4" onClick={handleSaveReport}>Raporu Oluştur</button>
+          </div>
         </div>
       )}
     </div>
