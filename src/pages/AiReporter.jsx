@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { sendRiskImagesToWebhook } from '../lib/aiReportApi';
 import html2pdf from 'html2pdf.js';
 import riskReportTemplate from '../templates/riskReport.html?raw';
+import naceList from '../data/nace.json';
 
 const GROUPS = [
   {
@@ -357,43 +358,62 @@ const AiReporter = () => {
     }
   };
 
-  // HTML şablonunu doldurma fonksiyonu
+  function getNaceInfo(naceKodu) {
+    const nace = naceList.find(item => item.nace_kod === naceKodu);
+    return {
+      faaliyet_konusu: nace ? nace.tanim : '',
+      tehlike_sinifi: nace ? nace.tehlike_sinifi : ''
+    };
+  }
+
+  function capitalize(str) {
+    if (!str) return '';
+    return str.charAt(0).toLocaleUpperCase('tr-TR') + str.slice(1);
+  }
+
   function fillTemplate(template, data) {
     // Ekip tablosu
     const ekipTablosu = data.ekip.map(e =>
       `<tr>
-        <td style="border:1px solid #aaa; padding:6px;">${e.ad}</td>
-        <td style="border:1px solid #aaa; padding:6px;">${e.gorev}</td>
-        <td style="border:1px solid #aaa; padding:6px;">${e.belge}</td>
+        <td style="border:1px solid #aaa; padding:8px; vertical-align: middle;">${e.ad}</td>
+        <td style="border:1px solid #aaa; padding:8px; vertical-align: middle;">${e.gorev}</td>
+        <td style="border:1px solid #aaa; padding:8px; vertical-align: middle;">${e.belge}</td>
       </tr>`
     ).join('');
+
     // Risk tablosu
     const riskTablosu = data.riskler.map(r =>
       `<tr>
-        <td style="border:1px solid #aaa; padding:6px;">${r.tehlike_kaynagi}</td>
-        <td style="border:1px solid #aaa; padding:6px;">${r.tehlike}</td>
-        <td style="border:1px solid #aaa; padding:6px;">${r.risk}</td>
-        <td style="border:1px solid #aaa; padding:6px;">${r.olasilik}</td>
-        <td style="border:1px solid #aaa; padding:6px;">${r.etki}</td>
-        <td style="border:1px solid #aaa; padding:6px;">${r.risk_puani}</td>
-        <td style="border:1px solid #aaa; padding:6px;">${r.azaltici_onleyici_faaliyet}</td>
-        <td style="border:1px solid #aaa; padding:6px;">${r.durum}</td>
+        <td style="border:1px solid #aaa; padding:6px; vertical-align: middle;">${capitalize(r.tehlike_kaynagi)}</td>
+        <td style="border:1px solid #aaa; padding:6px; vertical-align: middle;">${capitalize(r.tehlike)}</td>
+        <td style="border:1px solid #aaa; padding:6px; vertical-align: middle;">${capitalize(r.risk)}</td>
+        <td style="border:1px solid #aaa; padding:6px; vertical-align: middle; text-align: center;">${r.olasilik}</td>
+        <td style="border:1px solid #aaa; padding:6px; vertical-align: middle; text-align: center;">${r.etki}</td>
+        <td style="border:1px solid #aaa; padding:6px; vertical-align: middle; text-align: center;">${r.risk_puani}</td>
+        <td style="border:1px solid #aaa; padding:6px; vertical-align: middle;">${capitalize(r.azaltici_onleyici_faaliyet)}</td>
       </tr>`
     ).join('');
-    // İmza alanı
-    const ekipImza = data.ekip.map(e => e.ad).concat(['', '', '']).slice(0, 3);
+
+    // Dinamik imza alanı
+    const imzaGorevleri = data.ekip.map(e =>
+      `<td style="border: 1px solid #aaa; padding: 16px; vertical-align: middle; font-weight: bold;">${e.gorev}</td>`
+    ).join('');
+    const imzaIsimler = data.ekip.map(e =>
+      `<td style="border: 1px solid #aaa; padding: 16px; vertical-align: middle;">${e.ad}</td>`
+    ).join('');
+
     return template
-      .replace('{{isyeri_adi}}', data.isyeri_adi)
+      .replace('{{firma_adi}}', data.firma_adi)
       .replace('{{adres}}', data.adres)
       .replace('{{faaliyet_konusu}}', data.faaliyet_konusu)
       .replace('{{nace_kodu}}', data.nace_kodu)
+      .replace('{{tehlike_sinifi}}', data.tehlike_sinifi)
       .replace('{{calisan_sayisi}}', data.calisan_sayisi)
       .replace('{{rapor_tarihi}}', data.rapor_tarihi)
       .replace('{{ekip_tablosu}}', ekipTablosu)
       .replace('{{risk_tablosu}}', riskTablosu)
-      .replace('{{ekip_1}}', ekipImza[0])
-      .replace('{{ekip_2}}', ekipImza[1])
-      .replace('{{ekip_3}}', ekipImza[2]);
+      .replace('{{imza_gorevleri}}', imzaGorevleri)
+      .replace('{{imza_isimler}}', imzaIsimler);
   }
 
   function downloadPdfFromHtml(htmlString) {
@@ -411,15 +431,25 @@ const AiReporter = () => {
       alert('Firma ve risk verisi eksik!');
       return;
     }
-    // Sadece o anki riskResults ile çalış
+    // NACE'den faaliyet ve tehlike sınıfı çek
+    const { faaliyet_konusu, tehlike_sinifi } = getNaceInfo(selectedCompany.nace_code);
+
+    // Ekip dizisini oluştur (örnek)
+    const ekip = (selectedCompany.team || []).map(e => ({
+      ad: `${e.first_name} ${e.last_name}`,
+      gorev: e.role,
+      belge: e.job_title
+    }));
+
     const data = {
-      isyeri_adi: selectedCompany.company_name,
-      adres: selectedCompany.address,
-      faaliyet_konusu: selectedCompany.activity,
-      nace_kodu: selectedCompany.nace_code,
-      calisan_sayisi: selectedCompany.employee_count,
+      firma_adi: (selectedCompany.company_name || '').toLocaleUpperCase('tr-TR'),
+      adres: selectedCompany.address || '',
+      faaliyet_konusu,
+      nace_kodu: selectedCompany.nace_code || '',
+      tehlike_sinifi,
+      calisan_sayisi: selectedCompany.employee_count || '',
       rapor_tarihi: new Date().toLocaleDateString('tr-TR'),
-      ekip: selectedCompany.team || [], // örnek: [{ad: '...', gorev: '...', belge: '...'}]
+      ekip,
       riskler: riskResults
     };
     const html = fillTemplate(riskReportTemplate, data);
