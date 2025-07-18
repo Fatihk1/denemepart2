@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { sendRiskImagesToWebhook } from '../lib/aiReportApi';
+import { supabase } from '../../lib/supabaseClient';
+import { sendRiskImagesToWebhook } from '../../lib/aiReportApi';
 import html2pdf from 'html2pdf.js';
-import riskReportTemplate from '../templates/riskReport.html?raw';
-import naceList from '../data/nace.json';
+import riskReportTemplate from '../../templates/riskReport.html?raw';
+import naceList from '../../data/nace.json';
 
 const GROUPS = [
   {

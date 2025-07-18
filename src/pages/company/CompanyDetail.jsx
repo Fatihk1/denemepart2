@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
-import EmployeeSection from '../components/EmployeeSection';
-import MachineSection from '../components/MachineSection';
-import ChemicalSection from '../components/ChemicalSection';
-import PpeSection from '../components/PpeSection';
-import FireSection from '../components/FireSection';
-import AssignmentSection from '../components/AssignmentSection';
-import ReportSection from '../components/ReportSection';
-import CompanyModal from '../components/CompanyModal';
-import iller from '../data/il.json';
-import ilceler from '../data/ilce.json';
+import { supabase } from '../../lib/supabaseClient';
+import EmployeeSection from '../../components/EmployeeSection';
+import MachineSection from '../../components/MachineSection';
+import ChemicalSection from '../../components/ChemicalSection';
+import PpeSection from '../../components/PpeSection';
+import FireSection from '../../components/FireSection';
+import AssignmentSection from '../../components/AssignmentSection';
+import ReportSection from '../../components/ReportSection';
+import CompanyModal from '../../components/CompanyModal';
+import iller from '../../data/il.json';
+import ilceler from '../../data/ilce.json';
 
 const categories = [
   { key: 'employees', label: 'Çalışanlar' },
