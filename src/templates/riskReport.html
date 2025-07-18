@@ -1,26 +1,46 @@
 <div style="font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; border: 1px solid #ccc; padding: 32px;">
-  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-    <div>
-      <h2 style="margin-bottom: 8px;">İşyeri Adı: {{isyeri_adi}}</h2>
-      <div><b>Adres:</b> {{adres}}</div>
-      <div><b>Faaliyet Konusu:</b> {{faaliyet_konusu}}</div>
-      <div><b>NACE Kodu:</b> {{nace_kodu}}</div>
-      <div><b>Çalışan Sayısı:</b> {{calisan_sayisi}}</div>
-    </div>
+  <h1 style="text-align: center; font-size: 2rem; font-weight: bold; margin-bottom: 32px; letter-spacing: 1px;">RİSK ANALİZ RAPORU</h1>
+  <div style="display: flex; justify-content: flex-end; align-items: flex-start; margin-bottom: 8px;">
     <div style="text-align: right;">
       <b>Rapor Tarihi:</b> {{rapor_tarihi}}
     </div>
   </div>
+  <table style="width: 420px; border-collapse: collapse; margin-bottom: 24px; text-align: left;">
+    <tr>
+      <td style="font-weight: bold; width: 200px; padding: 6px;">Firma Adı:</td>
+      <td style="padding: 6px;">{{firma_adi}}</td>
+    </tr>
+    <tr>
+      <td style="font-weight: bold; padding: 6px;">Adres:</td>
+      <td style="padding: 6px;">{{adres}}</td>
+    </tr>
+    <tr>
+      <td style="font-weight: bold; padding: 6px;">Faaliyet Konusu:</td>
+      <td style="padding: 6px;">{{faaliyet_konusu}}</td>
+    </tr>
+    <tr>
+      <td style="font-weight: bold; padding: 6px;">NACE Kodu:</td>
+      <td style="padding: 6px;">{{nace_kodu}}</td>
+    </tr>
+    <tr>
+      <td style="font-weight: bold; padding: 6px;">Tehlike Sınıfı:</td>
+      <td style="padding: 6px;">{{tehlike_sinifi}}</td>
+    </tr>
+    <tr>
+      <td style="font-weight: bold; padding: 6px;">Çalışan Sayısı:</td>
+      <td style="padding: 6px;">{{calisan_sayisi}}</td>
+    </tr>
+  </table>
 
   <hr style="margin: 24px 0;"/>
 
-  <h3>Risk Değerlendirme Ekibi</h3>
-  <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+  <h3 style="font-size: 1.2rem; font-weight: bold; margin-top: 40px; margin-bottom: 16px;">Risk Değerlendirme Ekibi</h3>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; text-align: center;">
     <thead>
       <tr>
-        <th style="border: 1px solid #aaa; padding: 6px;">Adı Soyadı</th>
-        <th style="border: 1px solid #aaa; padding: 6px;">Görev</th>
-        <th style="border: 1px solid #aaa; padding: 6px;">Belge / Unvan</th>
+        <th style="border: 1px solid #aaa; padding: 8px; font-weight: bold; font-size: 1rem;">Adı Soyadı</th>
+        <th style="border: 1px solid #aaa; padding: 8px; font-weight: bold; font-size: 1rem;">Görev</th>
+        <th style="border: 1px solid #aaa; padding: 8px; font-weight: bold; font-size: 1rem;">Belge / Unvan</th>
       </tr>
     </thead>
     <tbody>
@@ -28,18 +48,17 @@
     </tbody>
   </table>
 
-  <h3>Risk Analiz Tablosu</h3>
-  <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+  <h3 style="font-size: 1.2rem; font-weight: bold; margin-top: 40px; margin-bottom: 16px;">Risk Analiz Tablosu</h3>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; text-align: center; font-size: 0.95rem;">
     <thead>
       <tr>
-        <th style="border: 1px solid #aaa; padding: 6px;">Tehlike Kaynağı</th>
-        <th style="border: 1px solid #aaa; padding: 6px;">Tehlike</th>
-        <th style="border: 1px solid #aaa; padding: 6px;">Risk</th>
-        <th style="border: 1px solid #aaa; padding: 6px;">Olasılık</th>
-        <th style="border: 1px solid #aaa; padding: 6px;">Etki</th>
-        <th style="border: 1px solid #aaa; padding: 6px;">Risk Puanı</th>
-        <th style="border: 1px solid #aaa; padding: 6px;">Azaltıcı Önlem</th>
-        <th style="border: 1px solid #aaa; padding: 6px;">Durum</th>
+        <th style="border: 1px solid #aaa; padding: 8px; font-weight: bold; font-size: 1rem; vertical-align: middle;">Tehlike Kaynağı</th>
+        <th style="border: 1px solid #aaa; padding: 8px; font-weight: bold; font-size: 1rem; vertical-align: middle;">Tehlike</th>
+        <th style="border: 1px solid #aaa; padding: 8px; font-weight: bold; font-size: 1rem; vertical-align: middle;">Risk</th>
+        <th style="border: 1px solid #aaa; padding: 4px; width: 60px; font-weight: bold; font-size: 1rem; vertical-align: middle;">Olasılık</th>
+        <th style="border: 1px solid #aaa; padding: 4px; width: 60px; font-weight: bold; font-size: 1rem; vertical-align: middle;">Etki</th>
+        <th style="border: 1px solid #aaa; padding: 4px; width: 80px; font-weight: bold; font-size: 1rem; vertical-align: middle;">Risk Puanı</th>
+        <th style="border: 1px solid #aaa; padding: 8px; font-weight: bold; font-size: 1rem; vertical-align: middle;">Azaltıcı Önlem</th>
       </tr>
     </thead>
     <tbody>
@@ -48,14 +67,14 @@
   </table>
 
   <div style="margin-top: 40px;">
-    <h4>İmza Alanı</h4>
-    <table style="width: 100%; border-collapse: collapse;">
+    <h4 style="font-size: 1.1rem; font-weight: bold; margin-bottom: 16px;">İmza Alanı</h4>
+    <table style="width: 100%; border-collapse: collapse; text-align: center;">
       <tr>
-        <td style="border: 1px solid #aaa; padding: 24px; width: 33%; text-align: center;">{{ekip_1}}</td>
-        <td style="border: 1px solid #aaa; padding: 24px; width: 33%; text-align: center;">{{ekip_2}}</td>
-        <td style="border: 1px solid #aaa; padding: 24px; width: 33%; text-align: center;">{{ekip_3}}</td>
+        {{imza_gorevleri}}
       </tr>
-      <!-- Daha fazla ekip üyesi varsa ek satır eklenebilir -->
+      <tr>
+        {{imza_isimler}}
+      </tr>
     </table>
   </div>
 </div> 

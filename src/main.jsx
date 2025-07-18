@@ -4,14 +4,17 @@ import './styles/global.css'
 import App from './App.jsx'
 import AiReporter from './pages/AiReporter'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { PrimeReactProvider } from 'primereact/api'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Router>
-      <Routes>
-        <Route path="/*" element={<App />} />
-        <Route path="/ai-reporter" element={<AiReporter />} />
-      </Routes>
+    <Router>  
+      <PrimeReactProvider>
+        <Routes>
+          <Route path="/*" element={<App />} />
+          <Route path="/ai-reporter" element={<AiReporter />} />
+        </Routes>
+      </PrimeReactProvider>
     </Router>
   </StrictMode>,
 )
